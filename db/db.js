@@ -1,19 +1,10 @@
 const mysql = require("mysql");
 const config = require("./config");
 
-const connectDB = async () => {
-  const pool = mysql.createPool(config);
-
-  pool.getConnection((err, connection) => {
-    if (err) {
-      console.log({ error: err.message });
-    }
-
-    console.log("Connected to MySQL database");
-    if (connection) connection.release();
-  });
-};
-
-module.exports = connectDB;
-
-
+const connection = mysql.createConnection({
+  port: process.env.MYSQLPORT,
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE
+})
