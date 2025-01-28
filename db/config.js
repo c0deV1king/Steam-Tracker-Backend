@@ -10,3 +10,5 @@ const connection = mysql.createConnection({
   database: dbUrl.pathname,
   port: dbUrl.port
 });
+
+module.exports = { connection }
