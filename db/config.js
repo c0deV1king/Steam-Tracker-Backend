@@ -10,11 +10,3 @@ const connection = mysql.createConnection({
   database: dbUrl.pathname,
   port: dbUrl.port
 });
-
-connection.connect((eer) => {
-  if (err) {
-    console.error('Error connecting to database:', err);
-    return;
-  }
-  console.log('Successfully connected to database!');
-});
