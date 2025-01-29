@@ -21,7 +21,7 @@ connection.connect((err) => {
 });
 
 // Create database connection
-const connectionTesting = mysql.createConnection({
+connection = mysql.createConnection({
   host: dbUrl.hostname,
   user: dbUrl.username,
   password: dbUrl.password,
@@ -41,7 +41,7 @@ app.get('/api/test-connection', (req, res) => {
         error: err.message
       });
     }
-    
+
     // If we get here, everything is working!
     res.json({
       status: 'success',
