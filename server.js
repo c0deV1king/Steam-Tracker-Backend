@@ -20,18 +20,18 @@ connection.connect((err) => {
 });
 
 // Create database connection
-const connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT
+const connectionTesting = mysql.createConnection({
+  host: dbUrl.hostname,
+  user: dbUrl.username,
+  password: dbUrl.password,
+  database: dbUrl.pathname.substr(1),
+  port: dbUrl.port
 });
 
 // Create a test endpoint that checks everything
 app.get('/api/test-connection', (req, res) => {
   // Test database connection with a simple query
-  connection.query('SELECT 1 + 1 AS result', (err, results) => {
+  connectionTesting.query('SELECT 1 + 1 AS result', (err, results) => {
     if (err) {
       console.error('Database test failed:', err);
       return res.status(500).json({
