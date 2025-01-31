@@ -3,7 +3,7 @@ const mysql = require("mysql2");
 const dotenv = require("dotenv");
 dotenv.config();
 const cors = require("cors");
-const port = process.env.PORT;
+const port = process.env.port;
 const { connection } = require("./db/config")
 
 const app = express();
@@ -42,6 +42,8 @@ app.get('/api/test-connection', (req, res) => {
     });
   });
 });
+
+app.get('/controllers/getPlayerSummary')
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
