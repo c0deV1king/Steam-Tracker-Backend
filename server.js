@@ -59,7 +59,7 @@ app.get('/api/test-connection', (req, res) => {
   });
 });
 
-app.use("/api/v1", require("./src/routes/api/v1/routes"));
+app.use("/api/routes/", require("./src/routes/playerSummary"));
 
 app.get('/controllers/getPlayerSummary')
 
