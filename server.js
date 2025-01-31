@@ -8,7 +8,23 @@ const { connection } = require("./db/config")
 
 const app = express();
 
-app.use(cors());
+var allowedOrigins = [
+  'http://localhost:8080',
+  'https://steam-tracker-demo-production.up.railway.app/', 
+  'https://steam-tracker.codeviking.io'
+  ];
+
+  console.log("Asking cors if I am okay to use...")
+  app.use(cors({
+    origin: function(origin, callback){    // allow requests with no origin 
+      if(!origin) return callback(null, true);    if(allowedOrigins.indexOf(origin) === -1){
+        var msg = 'The CORS policy for this site does not ' +
+                  'allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }    return callback(null, true);
+    }
+  }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
