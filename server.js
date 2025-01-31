@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const cors = require("cors");
 const port = process.env.PORT;
-const { connection } = require("./db/config")
+const { connection } = require("./src/db/config")
 
 const app = express();
 
@@ -58,6 +58,8 @@ app.get('/api/test-connection', (req, res) => {
     });
   });
 });
+
+app.use("/api/v1", require("./src/routes/api/v1/routes"));
 
 app.get('/controllers/getPlayerSummary')
 
