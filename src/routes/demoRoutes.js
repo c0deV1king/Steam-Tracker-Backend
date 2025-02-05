@@ -1,6 +1,8 @@
 const express = require('express');
 const demoController = require('../controllers/getPlayerDemo');
 
-let router = express.Router();
+const router = express.Router();
 
 router.get('/', demoController.getTestMessage);
+
+module.exports = router;
