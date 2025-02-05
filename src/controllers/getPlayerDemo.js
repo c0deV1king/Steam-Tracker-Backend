@@ -1,5 +1,8 @@
+const testModel = require('../models/testMessageModel');
+
 const getTestMessage = (req, res) => {
-    res.send("Yo, this is the controller speaking from ./src/controllers/getPlayerDemo.js !")
+    const testMessage = testModel.getTestMessage();
+    res.send({ status: "OK", data: testMessage });
 };
 
 module.exports = {
