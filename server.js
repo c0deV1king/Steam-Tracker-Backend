@@ -5,6 +5,7 @@ dotenv.config();
 const cors = require("cors");
 const port = process.env.PORT;
 const { connection } = require("./src/db/config")
+const demoRoutes = require("./src/routes/demoRoutes")
 
 const app = express();
 
@@ -28,40 +29,7 @@ var allowedOrigins = [
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-connection.connect((err) => {
-  if (err) {
-    console.error('Error connecting to database:', err);
-    return;
-  }
-  console.log('Successfully connected to database!');
-});
-
-// Create a test endpoint that checks everything
-app.get('/api/test-connection', (req, res) => {
-  // Test database connection with a simple query
-  connection.query('SELECT 1 + 1 AS result', (err, results) => {
-    if (err) {
-      console.error('Database test failed:', err);
-      return res.status(500).json({
-        status: 'error',
-        message: 'Database connection failed',
-        error: err.message
-      });
-    }
-
-    // If we get here, everything is working!
-    res.json({
-      status: 'success',
-      message: 'All systems operational',
-      database: 'Connected successfully',
-      result: results[0].result  // Should return 2
-    });
-  });
-});
-
-app.use("/api/routes/", require("./src/routes/playerSummary"));
-
-app.get('/controllers/getPlayerSummary')
+app.use("/api/v1/Profile", demoRoutes)
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);

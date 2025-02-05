@@ -1,4 +1,5 @@
 const express = require('express');
+const express = require('./src/getPlayerSummary')
 
 let playerSummary = express.Router();
 
