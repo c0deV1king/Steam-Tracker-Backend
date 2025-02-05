@@ -1,5 +1,5 @@
 const express = require('express');
-const playerProfile = require('../src/getPlayerSummary')
+const playerProfile = require('../controllers/getPlayerSummary')
 
 let playerSummary = express.Router();
 
