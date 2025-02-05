@@ -1,22 +1,8 @@
 const express = require('express');
-const express = require('./src/getPlayerSummary')
+const playerProfile = require('../src/getPlayerSummary')
 
 let playerSummary = express.Router();
 
-playerSummary.use(function (req, res, next) {
-    res._json = res.json;
-    res.json = function json(obj) {
-        obj.apiVersion = 1;
-        res._json(obj);
-    };
-    next();
-});
-
-playerSummary.get("/info", (req, res) => {
-    const status = {
-        "Status": "Running"
-    };
-    res.send(status);
-});
+playerSummary.get('/', playerProfile.getPlayerSummary)
 
 module.exports = playerSummary;

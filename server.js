@@ -6,6 +6,7 @@ const cors = require("cors");
 const port = process.env.PORT;
 const { connection } = require("./src/db/config")
 const demoRoutes = require("./src/routes/demoRoutes")
+const playerSummaryRoutes = require("./src/routes/playerSummary")
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/api/v1/Profile", demoRoutes)
+app.use("/api/v1/Summary", playerSummaryRoutes)
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
