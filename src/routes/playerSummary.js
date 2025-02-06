@@ -5,4 +5,6 @@ let playerSummary = express.Router();
 
 playerSummary.get('/', playerProfile.getPlayerSummary)
 
-module.exports = playerSummary;
+module.exports = {
+    playerSummary
+};
