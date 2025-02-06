@@ -29,6 +29,8 @@ var allowedOrigins = [
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Note for me: this is how i understood the logic (https://www.freecodecamp.org/news/rest-api-design-best-practices-build-a-rest-api/)
+
 app.use("/api/v1/Profile", demoRoutes)
 
 app.listen(port, () => {
