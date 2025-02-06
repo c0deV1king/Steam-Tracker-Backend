@@ -6,6 +6,7 @@ const cors = require("cors");
 const port = process.env.PORT;
 const { connection } = require("./src/db/config")
 const demoRoutes = require("./src/routes/demoRoutes")
+const playerSummaryRoutes = require("./src/routes/playerSummary")
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: false }));
 // Note for me: this is how i understood the logic (https://www.freecodecamp.org/news/rest-api-design-best-practices-build-a-rest-api/)
 
 app.use("/api/v1/Profile", demoRoutes)
+app.use("/api/v1/Summary", playerSummaryRoutes)
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
