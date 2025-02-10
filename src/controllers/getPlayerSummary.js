@@ -17,7 +17,7 @@ const getPlayerSummary = async (req, res) => {
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: `Failed to fetch achievements for appid: ${appid}` })
+      body: JSON.stringify({ error: `Failed to fetch profile` })
     };
   }
 };
