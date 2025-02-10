@@ -1,10 +1,8 @@
 const express = require('express');
 const playerProfile = require('../controllers/getPlayerSummary')
 
-let playerSummary = express.Router();
+let router = express.Router();
 
-playerSummary.get('/', playerProfile.getPlayerSummary)
+router.get('/', playerProfile.getPlayerSummary)
 
-module.exports = {
-    playerSummary
-};
+module.exports = router;
