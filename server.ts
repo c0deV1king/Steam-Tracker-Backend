@@ -1,12 +1,13 @@
-const express = require("express");
-const mysql = require("mysql2");
-const dotenv = require("dotenv");
+import express from 'express';
+import mysql from 'mysql2';
+import dotenv from 'dotenv';
 dotenv.config();
-const cors = require("cors");
+import cors from 'cors';
 const port = process.env.PORT;
-const { connection } = require("./src/db/config")
-const demoRoutes = require("./src/routes/demoRoutes")
-const playerSummaryRoutes = require("./src/routes/playerSummary")
+import { playerSummaryRoutes } from './src/routes/playerSummary.js'
+// Example flow
+import { ProfileService } from "./flowExample.js";
+const profileService = new ProfileService();
 
 const app = express();
 
@@ -32,8 +33,17 @@ app.use(express.urlencoded({ extended: false }));
 
 // Note for me: this is how i understood the logic (https://www.freecodecamp.org/news/rest-api-design-best-practices-build-a-rest-api/)
 
-app.use("/api/v1/Profile", demoRoutes)
 app.use("/api/v1/Summary", playerSummaryRoutes)
+
+//Example from flowExample.ts
+app.get('/profiles', async (req, res) => {
+  try {
+    const profiles = await profileService.getProfiles();
+    res.json(profiles);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+})
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);

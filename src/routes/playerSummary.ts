@@ -5,4 +5,4 @@ const router = express.Router();
 
 router.get('/', playerProfile.getPlayerSummary)
 
-module.exports = router;
+export { router as playerSummaryRoutes };
