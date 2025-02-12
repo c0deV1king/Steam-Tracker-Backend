@@ -1,20 +1,12 @@
-import mysql from 'mysql2';
+ import dotenv from "dotenv";
+dotenv.config();
+ 
+ const dbConfig = {
+  database: process.env.MYSQLDATABASE,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  host: process.env.MYSQLHOST,
+  port: Number(process.env.MYSQLPORT || 3306),
+};
 
-const host = process.env.MYSQLHOST;
-const user = process.env.MYSQLUSER;
-const pass = process.env.MYSQLPASSWORD;
-const port = Number(process.env.MYSQLPORT);
-const database = process.env.MYSQLDATABASE;
-
-export const connection = mysql.createConnection({
-  host: host,
-  user: user,
-  password: pass,
-  database: database,
-  port: port
-});
-
-connection.connect((err) => {
-  if (err) throw err;
-  console.log("Connected to database!");
-});
+export default dbConfig;

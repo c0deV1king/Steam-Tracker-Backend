@@ -3,11 +3,8 @@ import mysql from 'mysql2';
 import dotenv from 'dotenv';
 dotenv.config();
 import cors from 'cors';
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 import { playerSummaryRoutes } from './src/routes/playerSummary.js'
-// Example flow
-import { ProfileService } from "./flowExample.js";
-const profileService = new ProfileService();
 
 const app = express();
 
@@ -33,17 +30,8 @@ app.use(express.urlencoded({ extended: false }));
 
 // Note for me: this is how i understood the logic (https://www.freecodecamp.org/news/rest-api-design-best-practices-build-a-rest-api/)
 
-app.use("/api/v1/Summary", playerSummaryRoutes)
 
-//Example from flowExample.ts
-app.get('/profiles', async (req, res) => {
-  try {
-    const profiles = await profileService.getProfiles();
-    res.json(profiles);
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-})
+app.use('/api/profiles', playerSummaryRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);

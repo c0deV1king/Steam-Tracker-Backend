@@ -1,8 +1,10 @@
-const express = require('express');
-const playerProfile = require('../controllers/getPlayerSummary')
+import express from 'express';
+import { ProfileController } from '../controllers/profileController.js';
 
 const router = express.Router();
+const profileController = new ProfileController();
 
-router.get('/', playerProfile.getPlayerSummary)
+router.post('/update', profileController.updateProfile);
+router.get('/', profileController.getProfiles);
 
 export { router as playerSummaryRoutes };
