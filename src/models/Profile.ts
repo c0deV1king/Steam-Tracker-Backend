@@ -1,7 +1,8 @@
 import { Optional } from "sequelize";
 import { Table, Column, Model, DataType } from "sequelize-typescript";
 
-
+// interface is a "blueprint", it is showing what each object should look like
+// ?: is optional but : is required
 interface ProfileAttributes {
     steamid: string;
     personaname: string;

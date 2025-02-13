@@ -30,6 +30,7 @@ app.use(express.urlencoded({ extended: false }));
 // Note for me: this is how i understood the logic (https://www.freecodecamp.org/news/rest-api-design-best-practices-build-a-rest-api/)
 
 
+// endpoint to call profile data (linked to routes/playerSummary.ts)
 app.use('/api/profiles', playerSummaryRoutes);
 
 app.listen(port, () => {

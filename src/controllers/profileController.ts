@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { PlayerSummary } from '../services/getPlayerSummary.js';
 
+// creating a profile class
+// https://www.slingacademy.com/article/typescript-class-constructor-complete-guide/
+// https://www.w3schools.com/typescript/typescript_classes.php
+
 export class ProfileController {
     private playerSummary: PlayerSummary;
 
@@ -8,6 +12,9 @@ export class ProfileController {
         this.playerSummary = new PlayerSummary();
         console.log('Profile Controller initialized');
     }
+
+    // updateProfile function, calls another function to fetch and store/update a profile
+    // connected to getPlayerSummary.ts in services
 
     updateProfile = async (req: Request, res: Response) => {
         console.log('Update profile called');
@@ -20,6 +27,9 @@ export class ProfileController {
         }
     }
 
+    // getProfiles function, calls another function to retrieve profiles that are stored in the database
+    // connected to getPlayerSummary.ts in services
+    
     getProfiles = async (req: Request, res: Response) => {
         console.log('Get profiles called');
         try {

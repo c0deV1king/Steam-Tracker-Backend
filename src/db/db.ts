@@ -4,14 +4,11 @@ import dbConfig from "../db/config.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-console.log("DB CONFIG CONTENT: ", dbConfig);
 const sequelize = new Sequelize({
-    //...dbConfig,
-    database: process.env.DATABASE as string,
-    username: process.env.DB_USERNAME as string,
-    password: process.env.DB_PASSWORD as string,
-    host: process.env.DB_HOST as string,
-    port: Number(process.env.DB_PORT || 3306),
+    // ... is spreading out the dbConfig object
+    // makes it look cleaner. Connected to config.ts in db
+    // or hover over dbConfig to see the object
+    ...dbConfig,
     dialect: "mysql",
     dialectOptions: {
         ssl: {
