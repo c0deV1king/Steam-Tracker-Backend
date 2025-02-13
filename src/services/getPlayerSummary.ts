@@ -18,6 +18,7 @@ export class PlayerSummary {
     }
 
     async fetchAndStoreUsers(): Promise<void> {
+        console.log('Fetching Steam profile');
         try {
             const response = await axios.get(`http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/`, {
                 params: {
@@ -25,6 +26,7 @@ export class PlayerSummary {
                     steamids: this.steamid
                 }
             });
+            console.log('Response:', response.data);
 
             // Steam API returns players array inside response object
             const profile = response.data.response.players[0];
@@ -50,6 +52,7 @@ export class PlayerSummary {
             console.log(Profile === Profile);
             console.log('Sequelize Models:', sequelize.models);
             console.log('Is Profile Initialized:', Profile.isInitialized);
+            sequelize.sync({force: false});
             return await Profile.findAll();
         } catch (error) {
             console.error('Error retrieving profiles:', error);
