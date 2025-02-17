@@ -1,11 +1,11 @@
 import axios from "axios";
 import dotenv from "dotenv";
-import Profile from "../models/Profile.js";
+import Profile from "../models/profile.model.js";
 import sequelize from '../db/db.js';
 dotenv.config();
 
 // 'this.' is used to access class properties inside of the specific class instance.
-export class PlayerSummary {
+export class profileService {
     // private only accessible within the class
     private steamApiKey: string;
     private steamid: string;
@@ -20,7 +20,7 @@ export class PlayerSummary {
     }
 
     // fetches and stores the profile data into the database
-    async fetchAndStoreUsers(): Promise<void> {
+    async updateProfile(id: string, body: any): Promise<void> {
         console.log('Fetching Steam profile');
         try {
             // fetch request with axios
@@ -36,17 +36,37 @@ export class PlayerSummary {
             // grabbing the retrieved profile data
             const profile = response.data.response.players[0];
 
+            // finding a profile to see if it exists in the database based on the steam id
+            const existingProfile = await Profile.findOne({ where: { steamid: profile.steamid } });
+
             // storing the profile data into the correct database columns
             // using the Profile model defined with Sequelize
             // connected to Profile.ts in models
-            await Profile.create({
-                steamid: profile.steamid,
-                personaname: profile.personaname,
-                profileurl: profile.profileurl,
-                avatarfull: profile.avatarfull,
-                loccountrycode: profile.loccountrycode,
-                timecreated: profile.timecreated
-            });
+
+            // if else. Checks if existingProfile found an entry.
+            // if a row exists, it updates the entire row rather than creating one.
+            if (existingProfile) {
+                await Profile.update({
+                    personaname: profile.personaname,
+                    profileurl: profile.profileurl,
+                    avatarfull: profile.avatarfull,
+                    loccountrycode: profile.loccountrycode,
+                    timecreated: profile.timecreated
+                }, { where: { steamid: profile.steamid } });
+                console.log('Profile exists updated');
+                // if no entry with the steam id exists, it creates one.
+            } else {
+                await Profile.create({
+                    steamid: profile.steamid,
+                    personaname: profile.personaname,
+                    profileurl: profile.profileurl,
+                    avatarfull: profile.avatarfull,
+                    loccountrycode: profile.loccountrycode,
+                    timecreated: profile.timecreated
+                });
+                console.log('Profile doesnt exist, created a new one');
+            };
+
 
         } catch (error) {
             console.error('Error fetching or storing Steam profile:', error);

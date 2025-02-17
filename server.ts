@@ -3,8 +3,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 import cors from 'cors';
 const port = process.env.PORT || 3000;
-import { playerSummaryRoutes } from './src/routes/playerSummary.js'
+import { ProfileController } from './src/controllers/profile.controller.js';
 
+const profileController = new ProfileController();
 const app = express();
 
 var allowedOrigins = [
@@ -31,7 +32,7 @@ app.use(express.urlencoded({ extended: false }));
 
 
 // endpoint to call profile data (linked to routes/playerSummary.ts)
-app.use('/api/profiles', playerSummaryRoutes);
+app.use('/api/profiles', profileController.route);
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);

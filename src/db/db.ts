@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize-typescript";
-import Profile from "../models/Profile.js";
+import Profile from "../models/profile.model.js";
 import dbConfig from "../db/config.js";
 import dotenv from "dotenv";
 dotenv.config();
