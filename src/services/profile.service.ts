@@ -8,13 +8,13 @@ dotenv.config();
 export class profileService {
     // private only accessible within the class
     private steamApiKey: string;
-    private steamid: string;
+    private steamId: string;
 
     constructor() {
         this.steamApiKey = process.env.steamApiKey || '';
-        this.steamid = process.env.steamid || '';
+        this.steamId = process.env.steamId || '';
 
-        if (!this.steamApiKey || !this.steamid) {
+        if (!this.steamApiKey || !this.steamId) {
             throw new Error('Steam API key or Steam ID not found in environment variables');
         }
     }
@@ -28,7 +28,7 @@ export class profileService {
                 // params is an object that will append the contents into the above url, axios feature.
                 params: {
                     key: this.steamApiKey,
-                    steamids: this.steamid
+                    steamids: this.steamId
                 }
             });
             console.log('Response:', response.data);
@@ -37,7 +37,7 @@ export class profileService {
             const profile = response.data.response.players[0];
 
             // finding a profile to see if it exists in the database based on the steam id
-            const existingProfile = await Profile.findOne({ where: { steamid: profile.steamid } });
+            const existingProfile = await Profile.findOne({ where: { steamId: profile.steamid } });
 
             // storing the profile data into the correct database columns
             // using the Profile model defined with Sequelize
@@ -47,24 +47,24 @@ export class profileService {
             // if a row exists, it updates the entire row rather than creating one.
             if (existingProfile) {
                 await Profile.update({
-                    personaname: profile.personaname,
-                    profileurl: profile.profileurl,
-                    avatarfull: profile.avatarfull,
-                    loccountrycode: profile.loccountrycode,
-                    timecreated: profile.timecreated
-                }, { where: { steamid: profile.steamid } });
+                    personaName: profile.personaname,
+                    profileUrl: profile.profileurl,
+                    avatarFull: profile.avatarfull,
+                    locCountryCode: profile.loccountrycode,
+                    timeCreated: profile.timecreated
+                }, { where: { steamId: profile.steamid } });
                 console.log('Profile exists updated');
                 // if no entry with the steam id exists, it creates one.
             } else {
                 await Profile.create({
-                    steamid: profile.steamid,
-                    personaname: profile.personaname,
-                    profileurl: profile.profileurl,
-                    avatarfull: profile.avatarfull,
-                    loccountrycode: profile.loccountrycode,
-                    timecreated: profile.timecreated
+                    steamId: profile.steamid,
+                    personaName: profile.personaname,
+                    profileUrl: profile.profileurl,
+                    avatarFull: profile.avatarfull,
+                    locCountryCode: profile.loccountrycode,
+                    timeCreated: profile.timecreated
                 });
-                console.log('Profile doesnt exist, created a new one');
+                console.log('Profile does not exist, created a new one');
             };
 
 

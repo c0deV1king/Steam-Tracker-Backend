@@ -4,12 +4,12 @@ import { Table, Column, Model, DataType } from "sequelize-typescript";
 // interface is a "blueprint", it is showing what each object should look like
 // ?: is optional but : is required
 interface ProfileAttributes {
-    steamid: string;
-    personaname: string;
-    profileurl: string;
-    avatarfull: string;
-    loccountrycode?: string;
-    timecreated?: number;
+    steamId: string;
+    personaName: string;
+    profileUrl: string;
+    avatarFull: string;
+    locCountryCode?: string;
+    timeCreated?: number;
 }
 
 @Table({
@@ -21,35 +21,35 @@ export default class Profile extends Model<ProfileAttributes> implements Profile
         type: DataType.STRING,
         allowNull: false,
     })
-    steamid!: string;
+    steamId!: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: false,
     })
-    personaname!: string;
+    personaName!: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: false,
     })
-    profileurl!: string;
+    profileUrl!: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: false,
     })
-    avatarfull!: string;
+    avatarFull!: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: true,
     })
-    loccountrycode?: string;
+    locCountryCode?: string;
 
     @Column({
         type: DataType.INTEGER,
         allowNull: true,
     })
-    timecreated?: number;
+    timeCreated?: number;
 };
