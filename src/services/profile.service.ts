@@ -20,6 +20,9 @@ export class profileService {
     }
 
     // fetches and stores the profile data into the database
+    // Promise<Profile | null>
+    // End result must return a Profile object or it will return null
+    // Note: All paths must have a return value to satisfy TypeScript
     async updateProfile(steamid: string, body: any): Promise<Profile | null> {
         console.log('Fetching Steam profile');
         try {
@@ -54,6 +57,7 @@ export class profileService {
                     timeCreated: profile.timecreated
                 }, { where: { steamId: profile.steamid } });
                 console.log('Profile exists updated');
+                // finds the data and returns the updated data
                 const updatedProfile = await Profile.findOne({ where: { steamId: profile.steamid } });
                 return updatedProfile;
                 
@@ -68,6 +72,7 @@ export class profileService {
                     timeCreated: profile.timecreated
                 });
                 console.log('Profile does not exist, created a new one');
+                // finds the data and returns the updated data
                 const updatedProfile = await Profile.findOne({ where: { steamId: profile.steamid } });
                 return updatedProfile;
             };

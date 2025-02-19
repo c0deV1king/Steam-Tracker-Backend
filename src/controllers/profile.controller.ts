@@ -16,6 +16,9 @@ export class ProfileController {
         console.log('Profile Controller initialized');
     }
 
+    // creating the routes to get and update your profile using an endpoint
+    // patch is used to update and store the data
+    // get is used to retrieve the data
     private initializeRoutes() {
         this.route.patch(
             "/update/:steamid",
@@ -25,10 +28,13 @@ export class ProfileController {
                     console.log('Updating profile');
                     const { steamid } = req.params;
                     const { body } = req;
+                    // initializes a profileService instance and calls the
+                    // updateProfile method with the steamid and body parameters
                     const updatedProfile = await this.profileService.updateProfile(
                         steamid,
                         body
                     );
+                    // logs the updated results
                     res.status(200).json({ message: `Profile updated successfully`, profile: updatedProfile });
                 } catch (error) {
                     res.status(500).json({ error: 'Failed to update profile' });
