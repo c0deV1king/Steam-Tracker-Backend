@@ -20,7 +20,7 @@ export class profileService {
     }
 
     // fetches and stores the profile data into the database
-    async updateProfile(id: string, body: any): Promise<void> {
+    async updateProfile(steamid: string, body: any): Promise<Profile | null> {
         console.log('Fetching Steam profile');
         try {
             // fetch request with axios
@@ -54,6 +54,9 @@ export class profileService {
                     timeCreated: profile.timecreated
                 }, { where: { steamId: profile.steamid } });
                 console.log('Profile exists updated');
+                const updatedProfile = await Profile.findOne({ where: { steamId: profile.steamid } });
+                return updatedProfile;
+                
                 // if no entry with the steam id exists, it creates one.
             } else {
                 await Profile.create({
@@ -65,6 +68,8 @@ export class profileService {
                     timeCreated: profile.timecreated
                 });
                 console.log('Profile does not exist, created a new one');
+                const updatedProfile = await Profile.findOne({ where: { steamId: profile.steamid } });
+                return updatedProfile;
             };
 
 

@@ -23,13 +23,13 @@ export class ProfileController {
                 console.log('Update profile called');
                 try {
                     console.log('Updating profile');
-                    const { id } = req.params;
+                    const { steamid } = req.params;
                     const { body } = req;
                     const updatedProfile = await this.profileService.updateProfile(
-                        id,
+                        steamid,
                         body
                     );
-                    res.status(200).json({ message: `Profile updated successfully: ${updatedProfile}` });
+                    res.status(200).json({ message: `Profile updated successfully`, profile: updatedProfile });
                 } catch (error) {
                     res.status(500).json({ error: 'Failed to update profile' });
                 }
