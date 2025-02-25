@@ -8,7 +8,7 @@
     "experimentalSpecifierResolution": "node"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --require ts-node/register src/test/*.ts",
     "server": "nodemon server.ts",
     "start": "nodemon --watch 'src/**/*.ts' server.ts"
   },
@@ -36,6 +36,7 @@
     "uuid": "^11.0.5"
   },
   "devDependencies": {
+    "@types/chai": "^5.0.1",
     "@types/cors": "^2.8.17",
     "@types/mocha": "^10.0.10",
     "@types/mysql": "^2.15.26",

@@ -1,4 +1,4 @@
-const { expect } = require("chai");
+import { expect } from "chai";
 
 // Describe the test suite
 describe("Array", function () {
