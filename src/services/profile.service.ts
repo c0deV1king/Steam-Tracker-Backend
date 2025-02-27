@@ -35,7 +35,7 @@ export class profileService {
           // params is an object that will append the contents into the above url, axios feature.
           params: {
             key: this.steamApiKey,
-            steamids: steamid,
+            steamids: this.steamId,
           },
         }
       );
