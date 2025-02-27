@@ -8,7 +8,7 @@
     "experimentalSpecifierResolution": "node"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --require ts-node/register src/test/*.ts",
     "server": "nodemon server.ts",
     "start": "nodemon --watch 'src/**/*.ts' server.ts"
   },
@@ -32,14 +32,19 @@
     "sequelize": "^6.37.5",
     "sequelize-typescript": "^2.1.6",
     "sqlite3": "^5.1.7",
+    "ts-mocha": "^11.1.0",
     "ts-node": "^10.9.2",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
+    "@types/chai": "^5.0.1",
     "@types/cors": "^2.8.17",
+    "@types/mocha": "^10.0.10",
     "@types/mysql": "^2.15.26",
     "@types/node": "^22.13.1",
     "@types/validator": "^13.12.2",
+    "chai": "^5.2.0",
+    "mocha": "^11.1.0",
     "typescript": "^5.7.3"
   }
 }
