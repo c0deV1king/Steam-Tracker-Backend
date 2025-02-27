@@ -5,7 +5,7 @@ import sequelize from "../db/db.js";
 dotenv.config();
 
 // 'this.' is used to access class properties inside of the specific class instance.
-export class profileService {
+export class ProfileService {
   // private only accessible within the class
   private steamApiKey: string;
   private steamId: string;
