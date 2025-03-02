@@ -4,8 +4,6 @@ import sinon from "sinon";
 import axios from "axios";
 import { ProfileService } from "../services/profile.service.js";
 import dotenv from "dotenv";
-import { create } from "axios/index.cjs";
-import { mock } from "node:test";
 dotenv.config();
 
 // Arrange, Act, Assert
@@ -20,7 +18,7 @@ describe("Profile Service", () => {
     profileService = new ProfileService();
     // mock data should be defined before each test
     const now = new Date("2025-02-27T00:00:00Z");
-    const mockProfile = {
+    mockProfile = {
       id: 1,
       steamid: "666",
       personaName: "Egghead",
@@ -33,7 +31,10 @@ describe("Profile Service", () => {
     };
 
     // "stub" axios to prevent actual API calls
-    updateProfile = sinon.stub(axios, "post").resolves({ data: mockProfile });
+    updateProfile = sinon
+      .stub(axios, "post")
+      .resolves({ data: { ...mockProfile } });
+    console.log("mockProfile in BeforeEach", mockProfile);
   });
 
   afterEach(() => {
@@ -43,8 +44,9 @@ describe("Profile Service", () => {
   });
 
   it("should return mock profile", async () => {
+    console.log(mockProfile);
     // individual test case
-    const profile = await profileService.updateProfile("666", "apiKey");
+    const profile = await profileService.updateProfile("666", {});
 
     expect(profile).to.deep.equal(mockProfile);
     expect(updateProfile.calledOnce).to.be.true;

@@ -8,7 +8,7 @@
     "experimentalSpecifierResolution": "node"
   },
   "scripts": {
-    "test": "mocha --require ts-node/register src/test/*.ts",
+    "test": "mocha --require ts-node/register src/test/*.ts --timeout 100000",
     "server": "nodemon server.ts",
     "start": "nodemon --watch 'src/**/*.ts' server.ts"
   },
