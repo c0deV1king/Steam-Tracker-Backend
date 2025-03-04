@@ -3,6 +3,7 @@ import { describe, it, beforeEach } from "mocha";
 import sinon from "sinon";
 import axios from "axios";
 import { ProfileService } from "../services/profile.service.js";
+import Profile from "../models/profile.model.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -12,7 +13,10 @@ describe("Profile Service", () => {
   // group related tests
   let profileService: ProfileService;
   let updateProfile: sinon.SinonStub;
+  let findProfile: sinon.SinonStub;
+  let createProfile: sinon.SinonStub;
   let mockProfile: any;
+
   beforeEach(() => {
     // runs before each test
     profileService = new ProfileService();
@@ -31,10 +35,16 @@ describe("Profile Service", () => {
     };
 
     // "stub" axios to prevent actual API calls
-    updateProfile = sinon
-      .stub(axios, "post")
-      .resolves({ data: { ...mockProfile } });
-    console.log("mockProfile in BeforeEach", mockProfile);
+    updateProfile = sinon.stub(axios, "get").resolves({
+      data: {
+        response: {
+          players: [mockProfile],
+        },
+      },
+    });
+
+    findProfile = sinon.stub(Profile, "findOne").resolves(mockProfile);
+    createProfile = sinon.stub(Profile, "create").resolves(mockProfile);
   });
 
   afterEach(() => {
@@ -44,7 +54,6 @@ describe("Profile Service", () => {
   });
 
   it("should return mock profile", async () => {
-    console.log(mockProfile);
     // individual test case
     const profile = await profileService.updateProfile("666", {});
 
