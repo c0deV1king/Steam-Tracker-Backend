@@ -3,7 +3,6 @@ import { describe, it, beforeEach } from "mocha";
 import sinon from "sinon";
 import axios from "axios";
 import { ProfileService } from "../services/profile.service.js";
-import Profile from "../models/profile.model.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -13,8 +12,6 @@ describe("Profile Service", () => {
   // group related tests
   let profileService: ProfileService;
   let updateProfile: sinon.SinonStub;
-  let findProfile: sinon.SinonStub;
-  let createProfile: sinon.SinonStub;
   let mockProfile: any;
 
   beforeEach(() => {
@@ -42,9 +39,6 @@ describe("Profile Service", () => {
         },
       },
     });
-
-    findProfile = sinon.stub(Profile, "findOne").resolves(mockProfile);
-    createProfile = sinon.stub(Profile, "create").resolves(mockProfile);
   });
 
   afterEach(() => {
