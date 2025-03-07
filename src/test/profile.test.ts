@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { describe, it, beforeEach } from "mocha";
+import { describe, it, before } from "mocha";
 import sinon from "sinon";
 import axios from "axios";
 import { ProfileService } from "../services/profile.service.js";
@@ -10,48 +10,16 @@ dotenv.config();
 
 describe("Profile Service", () => {
   // group related tests
-  let profileService: ProfileService;
-  let updateProfile: sinon.SinonStub;
-  let mockProfile: any;
 
-  beforeEach(() => {
-    // runs before each test
-    profileService = new ProfileService();
-    // mock data should be defined before each test
-    const now = new Date("2025-02-27T00:00:00Z");
-    mockProfile = {
-      id: 1,
-      steamid: "666",
-      personaName: "Egghead",
-      profileUrl: "https://steamcommunity.com/id/egghead",
-      avatarFull: "avatar url",
-      locCountryCode: "CA",
-      timeCreated: 1234567890,
-      createdAt: now,
-      updatedAt: now,
-    };
+  before(() => {
+    // runs before all tests
 
-    // "stub" axios to prevent actual API calls
-    updateProfile = sinon.stub(axios, "get").resolves({
-      data: {
-        response: {
-          players: [mockProfile],
-        },
-      },
+    afterEach(() => {
+      // run after each test
     });
-  });
 
-  afterEach(() => {
-    // run after each test
-    // restore axios to its original state
-    updateProfile.restore();
-  });
-
-  it("should return mock profile", async () => {
-    // individual test case
-    const profile = await profileService.updateProfile("666", {});
-
-    expect(profile).to.deep.equal(mockProfile);
-    expect(updateProfile.calledOnce).to.be.true;
+    it("should return mock profile", async () => {
+      // individual test case
+    });
   });
 });

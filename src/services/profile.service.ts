@@ -25,8 +25,8 @@ export class ProfileService {
   // Promise<Profile | null>
   // End result must return a Profile object or it will return null
   // Note: All paths must have a return value to satisfy TypeScript
-  async updateProfile(steamid: string, body: any): Promise<Profile | null> {
-    console.log("Fetching Steam profile");
+  async updateProfile(steamId: string): Promise<Profile | null> {
+    console.log("Fetching Steam profile for steamId:", steamId);
     try {
       // fetch request with axios
       const response = await axios.get(
@@ -35,7 +35,7 @@ export class ProfileService {
           // params is an object that will append the contents into the above url, axios feature.
           params: {
             key: this.steamApiKey,
-            steamids: this.steamId,
+            steamids: steamId,
           },
         }
       );
@@ -43,6 +43,7 @@ export class ProfileService {
 
       // grabbing the retrieved profile data
       const profile = response.data.response.players[0];
+      console.log("Profile:", profile);
 
       // finding a profile to see if it exists in the database based on the steam id
       const existingProfile = await Profile.findOne({

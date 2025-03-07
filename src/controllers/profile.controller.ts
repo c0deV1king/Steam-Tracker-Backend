@@ -21,26 +21,22 @@ export class ProfileController {
   // get is used to retrieve the data
   private initializeRoutes() {
     this.route.patch(
-      "/update/:steamid",
+      "/update/:steamId",
       async (req: Request, res: Response) => {
         console.log("Update profile called");
         try {
           console.log("Updating profile");
-          const { steamid } = req.params;
-          const { body } = req;
+          const { steamId } = req.params;
           // initializes a profileService instance and calls the
           // updateProfile method with the steamid and body parameters
           const updatedProfile = await this.profileService.updateProfile(
-            steamid,
-            body
+            steamId
           );
           // logs the updated results
-          res
-            .status(200)
-            .json({
-              message: `Profile updated successfully`,
-              profile: updatedProfile,
-            });
+          res.status(200).json({
+            message: `Profile updated successfully`,
+            profile: updatedProfile,
+          });
         } catch (error) {
           res.status(500).json({ error: "Failed to update profile" });
         }
