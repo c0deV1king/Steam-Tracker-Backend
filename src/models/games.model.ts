@@ -7,7 +7,8 @@ interface Screenshot {
 }
 
 interface GameAttributes {
-  steam_appid: number;
+  appid: number;
+  playtime_forever?: number;
   gameName: string;
   genres: string;
   headerImage: string;
@@ -28,7 +29,13 @@ export default class Game
     type: DataType.NUMBER,
     allowNull: false,
   })
-  steam_appid!: number;
+  appid!: number;
+
+  @Column({
+    type: DataType.NUMBER,
+    allowNull: true,
+  })
+  playtime_forever?: number;
 
   @Column({
     type: DataType.STRING,
