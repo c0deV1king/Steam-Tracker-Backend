@@ -26,8 +26,9 @@ export class GamesService {
   };
 
   async fetchGames(steamId: string): Promise<Game | null> {
-    console.log("Fetching Steam profile for steamId:", steamId);
+    console.log("Fetching Steam games for steamId:", steamId);
     try {
+      await sequelize.sync();
       const { data: allGamesResponse } = await axios.get(
         `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/`,
         {
@@ -44,7 +45,7 @@ export class GamesService {
       if (games.length === 0) return null;
 
       //extract the appids from games list
-      const appIds = games.map((game) => game.appid);
+      const appIds = games.map((game: any) => game.appid);
 
       await this.rateLimitDelay(300, 1000);
 
@@ -52,44 +53,55 @@ export class GamesService {
 
       console.log("starting gameSchema using appid:", appIds);
       // chaining two more api calls using the appids from the first call, looping through each game one by one
-      const gameSchema = appIds.map((appid) =>
-        axios
-          .get(
-            `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?appid=${appid}&key=${this.steamApiKey}`
-            // {
-            //   params: {
-            //     key: this.steamApiKey,
-            //     appid: appid,
-            //   },
-            // }
-          )
-          .then((res) => res.data)
-      );
-      const gameSchemaData = await Promise.all(gameSchema);
+      const gameSchema = async (appIds: number[]) => {
+        return await Promise.all(
+          appIds.map(async (appid) => {
+            await this.rateLimitDelay(300, 1000);
+            return axios
+              .get(
+                `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?appid=${appid}&key=${this.steamApiKey}`
+              )
+              .then((res) => res.data)
+              .catch((error) => {
+                console.error(
+                  `Error fetching schema for appid ${appid}:`,
+                  error.response?.data || error.message
+                );
+                return null;
+              });
+          })
+        );
+      };
+
+      const gameSchemaData = await gameSchema(appIds);
       console.log("gameSchemaData:", gameSchemaData);
 
-      const gameDetails = appIds.map((appid) =>
-        axios
-          .get(`https://store.steampowered.com/api/appdetails`, {
-            params: {
-              appids: appid,
-            },
+      const gameDetails = async (appIds: number[]) => {
+        return await Promise.all(
+          appIds.map(async (appid) => {
+            await this.rateLimitDelay(300, 1000);
+            return axios
+              .get(`https://store.steampowered.com/api/appdetails`, {
+                params: { appids: appid },
+              })
+              .then((res) => res.data[appid]?.data || null)
+              .catch((error) => {
+                console.error(
+                  `Error fetching details for appid ${appid}:`,
+                  error.response?.data || error.message
+                );
+                return null;
+              });
           })
-          .then((res) => res.data[appid].data)
-      );
-      const gameDetailsData = await Promise.all(gameDetails);
-      console.log("gameDetailsData:", gameDetailsData);
+        );
+      };
 
-      const combinedGameData = games.map((game) => {
-        const schema =
-          gameSchemaData.find(
-            (schema) => schema.game?.gameName === game.name
-          ) || {};
-        const details =
-          gameDetailsData.find(
-            (details) => details?.steam_appid === game.appid
-          ) || {};
-        return { ...game, schema, details };
+      const combinedGameData = games.map((game, index) => {
+        return {
+          ...game,
+          schema: gameSchemaData[index] || {},
+          details: gameDetails[index] || {},
+        };
       });
 
       console.log("Combined game data:", combinedGameData);

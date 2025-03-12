@@ -6,11 +6,16 @@ interface Screenshot {
   path_full: string;
 }
 
+interface Genres {
+  id: string;
+  description: string;
+}
+
 interface GameAttributes {
   appid: number;
   playtime_forever?: number;
   gameName: string;
-  genres: string;
+  genres: Genres[];
   headerImage: string;
   screenshots?: Screenshot[];
   developers?: string;
@@ -26,13 +31,13 @@ export default class Game
   implements GameAttributes
 {
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.INTEGER,
     allowNull: false,
   })
   appid!: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.INTEGER,
     allowNull: true,
   })
   playtime_forever?: number;
@@ -44,10 +49,11 @@ export default class Game
   gameName!: string;
 
   @Column({
-    type: DataType.STRING,
+    type: DataType.JSON,
     allowNull: false,
+    defaultValue: [],
   })
-  genres!: string;
+  genres!: Genres[];
 
   @Column({
     type: DataType.STRING,
@@ -56,7 +62,7 @@ export default class Game
   headerImage!: string;
 
   @Column({
-    type: DataType.TEXT,
+    type: DataType.JSON,
     allowNull: true,
     defaultValue: [],
   })
