@@ -74,17 +74,16 @@ export class GamesService {
       };
 
       const gameSchemaData = await gameSchema(appIds);
-      console.log("gameSchemaData:", gameSchemaData);
 
       const gameDetails = async (appIds: number[]) => {
         return await Promise.all(
           appIds.map(async (appid) => {
             await this.rateLimitDelay(300, 1000);
             return axios
-              .get(`https://store.steampowered.com/api/appdetails`, {
-                params: { appids: appid },
-              })
-              .then((res) => res.data[appid]?.data || null)
+              .get(
+                `https://store.steampowered.com/api/appdetails/?appids=${appid}`
+              )
+              .then((res) => res.data)
               .catch((error) => {
                 console.error(
                   `Error fetching details for appid ${appid}:`,
@@ -96,26 +95,27 @@ export class GamesService {
         );
       };
 
+      const gameDetailsData = await gameDetails(appIds);
+
       const combinedGameData = games.map((game, index) => {
         return {
           ...game,
           schema: gameSchemaData[index] || {},
-          details: gameDetails[index] || {},
+          details: gameDetailsData[index] || {},
         };
       });
 
-      console.log("Combined game data:", combinedGameData);
-
       for (const game of combinedGameData) {
+        this.rateLimitDelay(300, 1000);
         // upsert is a sequelize function. It updates the entry if it exists, otherwise it will create a new one
         await Game.upsert({
           appid: game.appid,
           gameName: game.name,
-          genres: game.details?.genres || [],
-          headerImage: game.details?.header_image || "",
-          screenshots: game.details?.screenshots || [],
-          developers: game.details?.developers || "",
-          metacritic: game.details?.metacritic?.score || null,
+          genres: game.details?.data.genres || [],
+          headerImage: game.details?.data.header_image || "",
+          screenshots: game.details?.data.screenshots || [],
+          developers: game.details?.data.developers || "",
+          metacritic: game.details?.data.metacritic?.score || null,
         });
       }
 
