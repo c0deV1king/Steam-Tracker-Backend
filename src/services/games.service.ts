@@ -75,33 +75,21 @@ export class GamesService {
 
       const gameSchemaData = await gameSchema(appIds);
 
-      const gameDetails = async (appIds: number[]) => {
-        return await Promise.all(
-          appIds.map(async (appid) => {
-            await this.rateLimitDelay(300, 1000);
-            return axios
-              .get(
-                `https://store.steampowered.com/api/appdetails/?appids=${appid}`
-              )
-              .then((res) => res.data)
-              .catch((error) => {
-                console.error(
-                  `Error fetching details for appid ${appid}:`,
-                  error.response?.data || error.message
-                );
-                return null;
-              });
-          })
-        );
+      const randomDelay = () => {
+        const min = 75;
+        const max = 300;
+        return Math.floor(Math.random() * (max - min + 1) + min);
       };
 
-      const gameDetailsData = await gameDetails(appIds);
+      const delayedFetch = async (url, options = {}) => {
+        await new Promise((resolve) => setTimeout(resolve, randomDelay()));
+        return fetch(url, options);
+      };
 
-      const combinedGameData = games.map((game, index) => {
+      const combinedGameData = games.map((game: any, index: any) => {
         return {
           ...game,
           schema: gameSchemaData[index] || {},
-          details: gameDetailsData[index] || {},
         };
       });
 
