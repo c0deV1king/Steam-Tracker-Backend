@@ -1,25 +1,27 @@
 import { Table, Column, Model, DataType } from "sequelize-typescript";
 
-interface Screenshot {
-  id: number;
-  path_thumbnail: string;
-  path_full: string;
-}
+// temporarily commented out interfaces and columns until I figure out a better solution to them
 
-interface Genres {
-  id: string;
-  description: string;
-}
+// interface Screenshot {
+//   id: number;
+//   path_thumbnail: string;
+//   path_full: string;
+// }
+
+// interface Genres {
+//   id: string;
+//   description: string;
+// }
 
 interface GameAttributes {
   appid: number;
   playtime_forever?: number;
   gameName: string;
-  genres: Genres[];
+  // genres: Genres[];
   headerImage: string;
-  screenshots?: Screenshot[];
-  developers?: string;
-  metacritic?: number;
+  // screenshots?: Screenshot[];
+  // developers?: string;
+  // metacritic?: number;
 }
 
 @Table({
@@ -33,6 +35,7 @@ export default class Game
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
+    unique: true,
   })
   appid!: number;
 
@@ -48,12 +51,12 @@ export default class Game
   })
   gameName!: string;
 
-  @Column({
-    type: DataType.JSON,
-    allowNull: false,
-    defaultValue: [],
-  })
-  genres!: Genres[];
+  // @Column({
+  //   type: DataType.JSON,
+  //   allowNull: false,
+  //   defaultValue: [],
+  // })
+  // genres!: Genres[];
 
   @Column({
     type: DataType.STRING,
@@ -61,22 +64,22 @@ export default class Game
   })
   headerImage!: string;
 
-  @Column({
-    type: DataType.JSON,
-    allowNull: true,
-    defaultValue: [],
-  })
-  screenshots?: Screenshot[];
+  // @Column({
+  //   type: DataType.JSON,
+  //   allowNull: true,
+  //   defaultValue: [],
+  // })
+  // screenshots?: Screenshot[];
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  developers?: string;
+  // @Column({
+  //   type: DataType.STRING,
+  //   allowNull: true,
+  // })
+  // developers?: string;
 
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: true,
-  })
-  metacritic?: number;
+  //   @Column({
+  //     type: DataType.INTEGER,
+  //     allowNull: true,
+  //   })
+  //   metacritic?: number;
 }

@@ -47,7 +47,7 @@ export class GamesService {
       //extract the appids from games list
       const appIds = games.map((game: any) => game.appid);
 
-      await this.rateLimitDelay(300, 1000);
+      await this.rateLimitDelay(300, 700);
 
       console.log("fetchGames finished");
 
@@ -56,7 +56,7 @@ export class GamesService {
       const gameSchema = async (appIds: number[]) => {
         return await Promise.all(
           appIds.map(async (appid) => {
-            await this.rateLimitDelay(300, 1000);
+            await this.rateLimitDelay(300, 700);
             return axios
               .get(
                 `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?appid=${appid}&key=${this.steamApiKey}`
@@ -75,35 +75,34 @@ export class GamesService {
 
       const gameSchemaData = await gameSchema(appIds);
 
-      const randomDelay = () => {
-        const min = 75;
-        const max = 300;
-        return Math.floor(Math.random() * (max - min + 1) + min);
-      };
+      const headerImages = async (appIds: number[]) => {
+        const urls: string[] = [];
 
-      const delayedFetch = async (url, options = {}) => {
-        await new Promise((resolve) => setTimeout(resolve, randomDelay()));
-        return fetch(url, options);
+        for (const appid of appIds) {
+          await this.rateLimitDelay(300, 700);
+          urls.push(
+            `https://steamcdn-a.akamaihd.net/steam/apps/${appid}/capsule_616x353.jpg`
+          );
+        }
+        return urls;
       };
+      const headerUrls = await headerImages(appIds);
 
       const combinedGameData = games.map((game: any, index: any) => {
         return {
           ...game,
           schema: gameSchemaData[index] || {},
+          headerImage: headerUrls[index],
         };
       });
 
       for (const game of combinedGameData) {
-        this.rateLimitDelay(300, 1000);
+        console.log(`Upserting game:, ${game.name} - ${game.appid}`);
         // upsert is a sequelize function. It updates the entry if it exists, otherwise it will create a new one
         await Game.upsert({
           appid: game.appid,
           gameName: game.name,
-          genres: game.details?.data.genres || [],
-          headerImage: game.details?.data.header_image || "",
-          screenshots: game.details?.data.screenshots || [],
-          developers: game.details?.data.developers || "",
-          metacritic: game.details?.data.metacritic?.score || null,
+          headerImage: game.headerImage || "",
         });
       }
 
