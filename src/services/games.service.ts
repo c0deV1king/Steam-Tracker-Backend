@@ -4,6 +4,13 @@ import Game from "../models/games.model.js";
 import sequelize from "../db/db.js";
 dotenv.config();
 
+interface CombinedGameData {
+  appid: number;
+  gameName: string;
+  schema: any;
+  headerImage: string;
+}
+
 export class GamesService {
   private steamApiKey: string;
   private steamId: string;
@@ -25,7 +32,7 @@ export class GamesService {
     );
   };
 
-  async fetchGames(steamId: string): Promise<Game | null> {
+  async fetchGames(steamId: string): Promise<Game[] | null> {
     console.log("Fetching Steam games for steamId:", steamId);
     try {
       await sequelize.sync();
@@ -51,65 +58,48 @@ export class GamesService {
 
       console.log("fetchGames finished");
 
-      console.log("starting gameSchema using appid:", appIds);
-      // chaining two more api calls using the appids from the first call, looping through each game one by one
-      const gameSchema = async (appIds: number[]) => {
-        return await Promise.all(
-          appIds.map(async (appid) => {
-            await this.rateLimitDelay(300, 700);
-            return axios
-              .get(
-                `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?appid=${appid}&key=${this.steamApiKey}`
-              )
-              .then((res) => res.data)
-              .catch((error) => {
-                console.error(
-                  `Error fetching schema for appid ${appid}:`,
-                  error.response?.data || error.message
-                );
-                return null;
-              });
-          })
-        );
+      const gameSchema = async (appid: number[]): Promise<any> => {
+        await this.rateLimitDelay(300, 700);
+        return axios
+          .get(
+            `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?appid=${appid}&key=${this.steamApiKey}`
+          )
+          .then((res) => res.data);
       };
 
-      const gameSchemaData = await gameSchema(appIds);
+      const combinedGameData: CombinedGameData[] = [];
 
-      const headerImages = async (appIds: number[]) => {
-        const urls: string[] = [];
+      for (let i = 0; i < appIds.length; i++) {
+        const appid = appIds[i];
+        await this.rateLimitDelay(300, 700);
 
-        for (const appid of appIds) {
-          await this.rateLimitDelay(300, 700);
-          urls.push(
-            `https://steamcdn-a.akamaihd.net/steam/apps/${appid}/capsule_616x353.jpg`
-          );
-        }
-        return urls;
-      };
-      const headerUrls = await headerImages(appIds);
+        console.log(`Fetching game schema for appid: ${appid}`);
+        const gameSchemaData = await gameSchema(appid);
 
-      const combinedGameData = games.map((game: any, index: any) => {
-        return {
-          ...game,
-          schema: gameSchemaData[index] || {},
-          headerImage: headerUrls[index],
-        };
-      });
+        const headerImage = `https://steamcdn-a.akamaihd.net/steam/apps/${appid}/capsule_616x353.jpg`;
 
-      for (const game of combinedGameData) {
-        console.log(`Upserting game:, ${game.name} - ${game.appid}`);
+        const gameName = gameSchemaData?.game?.gameName || "Unknown Game";
+
+        combinedGameData.push({
+          appid: games[i].appid,
+          gameName: gameName,
+          schema: gameSchemaData,
+          headerImage: headerImage,
+        });
+
+        console.log(`Upserting game:, ${gameName} - ${appid}`);
         // upsert is a sequelize function. It updates the entry if it exists, otherwise it will create a new one
         await Game.upsert({
-          appid: game.appid,
-          gameName: game.name,
-          headerImage: game.headerImage || "",
+          appid: games[i].appid,
+          gameName: gameName,
+          headerImage: headerImage || "",
         });
-      }
 
-      console.log("Games stored in database successfully.");
-      return combinedGameData;
+        console.log("Games stored in database successfully.");
+      }
+      return Game.findAll({ where: { appid: appIds } });
     } catch (error) {
-      console.error("Error fetching or storing game data:", error);
+      console.error("Error fetching games:", error);
       throw error;
     }
   }
