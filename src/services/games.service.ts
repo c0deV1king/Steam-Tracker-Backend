@@ -7,8 +7,15 @@ dotenv.config();
 interface CombinedGameData {
   appid: number;
   gameName: string;
-  schema: any;
+  playtime_forever: number;
   headerImage: string;
+}
+
+interface SteamGameResponse {
+  response: {
+    game_count: number;
+    games: any[];
+  };
 }
 
 export class GamesService {
@@ -36,7 +43,7 @@ export class GamesService {
     console.log("Fetching Steam games for steamId:", steamId);
     try {
       await sequelize.sync();
-      const { data: allGamesResponse } = await axios.get(
+      const { data: allGamesResponse } = await axios.get<SteamGameResponse>(
         `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/`,
         {
           params: {
@@ -51,59 +58,31 @@ export class GamesService {
 
       if (games.length === 0) return null;
 
-      //extract the appids from games list
-      const appIds = games.map((game: any) => game.appid);
+      const ownedGameData: CombinedGameData[] = games.map((game: any) => ({
+        appid: game.appid,
+        gameName: game.name || "Unknown Game",
+        playtime_forever: game.playtime_forever || 0,
+        headerImage: `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`,
+      }));
 
       await this.rateLimitDelay(300, 700);
-
       console.log("fetchGames finished");
 
-      const gameSchema = async (appid: number[]): Promise<any> => {
-        await this.rateLimitDelay(300, 700);
-        return axios
-          .get(
-            `https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v0002/?appid=${appid}&key=${this.steamApiKey}`
-          )
-          .then((res) => res.data);
-      };
+      await Promise.all(
+        ownedGameData.map((game) =>
+          Game.upsert({
+            appid: game.appid,
+            gameName: game.gameName,
+            playtime_forever: game.playtime_forever,
+            headerImage: game.headerImage,
+          })
+        )
+      );
 
-      const combinedGameData: CombinedGameData[] = [];
-
-      for (let i = 0; i < appIds.length; i++) {
-        const appid = appIds[i];
-        await this.rateLimitDelay(300, 700);
-
-        Game.count({ where: { appid: appid } }).then(async (count) => {
-          if (count > 0) {
-            console.log(`Game with appid ${appid} already exists in database.`);
-          } else {
-            console.log(`Fetching game schema for appid: ${appid}`);
-            const gameSchemaData = await gameSchema([appid]);
-
-            const headerImage = `https://steamcdn-a.akamaihd.net/steam/apps/${appid}/capsule_616x353.jpg`;
-
-            const gameName = gameSchemaData?.game?.gameName || "Unknown Game";
-
-            combinedGameData.push({
-              appid: games[i].appid,
-              gameName: gameName,
-              schema: gameSchemaData,
-              headerImage: headerImage,
-            });
-
-            console.log(`Upserting game:, ${gameName} - ${appid}`);
-            // upsert is a sequelize function. It updates the entry if it exists, otherwise it will create a new one
-            await Game.upsert({
-              appid: games[i].appid,
-              gameName: gameName,
-              headerImage: headerImage || "",
-            });
-
-            console.log("Games stored in database successfully.");
-          }
-        });
-      }
-      return Game.findAll({ where: { appid: appIds } });
+      console.log("Games stored in database successfully.");
+      return Game.findAll({
+        where: { appid: ownedGameData.map((g) => g.appid) },
+      });
     } catch (error) {
       console.error("Error fetching games:", error);
       throw error;
@@ -112,7 +91,6 @@ export class GamesService {
 
   async getGames(): Promise<Game[]> {
     try {
-      // making sure everything is synced (unsure if I am using this correctly)
       await sequelize.sync({ force: false });
       return await Game.findAll();
     } catch (error) {
