@@ -73,29 +73,35 @@ export class GamesService {
         const appid = appIds[i];
         await this.rateLimitDelay(300, 700);
 
-        console.log(`Fetching game schema for appid: ${appid}`);
-        const gameSchemaData = await gameSchema(appid);
+        Game.count({ where: { appid: appid } }).then(async (count) => {
+          if (count > 0) {
+            console.log(`Game with appid ${appid} already exists in database.`);
+          } else {
+            console.log(`Fetching game schema for appid: ${appid}`);
+            const gameSchemaData = await gameSchema([appid]);
 
-        const headerImage = `https://steamcdn-a.akamaihd.net/steam/apps/${appid}/capsule_616x353.jpg`;
+            const headerImage = `https://steamcdn-a.akamaihd.net/steam/apps/${appid}/capsule_616x353.jpg`;
 
-        const gameName = gameSchemaData?.game?.gameName || "Unknown Game";
+            const gameName = gameSchemaData?.game?.gameName || "Unknown Game";
 
-        combinedGameData.push({
-          appid: games[i].appid,
-          gameName: gameName,
-          schema: gameSchemaData,
-          headerImage: headerImage,
+            combinedGameData.push({
+              appid: games[i].appid,
+              gameName: gameName,
+              schema: gameSchemaData,
+              headerImage: headerImage,
+            });
+
+            console.log(`Upserting game:, ${gameName} - ${appid}`);
+            // upsert is a sequelize function. It updates the entry if it exists, otherwise it will create a new one
+            await Game.upsert({
+              appid: games[i].appid,
+              gameName: gameName,
+              headerImage: headerImage || "",
+            });
+
+            console.log("Games stored in database successfully.");
+          }
         });
-
-        console.log(`Upserting game:, ${gameName} - ${appid}`);
-        // upsert is a sequelize function. It updates the entry if it exists, otherwise it will create a new one
-        await Game.upsert({
-          appid: games[i].appid,
-          gameName: gameName,
-          headerImage: headerImage || "",
-        });
-
-        console.log("Games stored in database successfully.");
       }
       return Game.findAll({ where: { appid: appIds } });
     } catch (error) {
