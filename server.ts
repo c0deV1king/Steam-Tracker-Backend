@@ -5,9 +5,11 @@ import cors from "cors";
 const port = process.env.PORT || 3000;
 import { ProfileController } from "./src/controllers/profile.controller.js";
 import { GameController } from "./src/controllers/games.controller.js";
+import { AchievementsController } from "./src/controllers/achievements.controller.js";
 
 const profileController = new ProfileController();
 const gameController = new GameController();
+const achievementsController = new AchievementsController();
 const app = express();
 
 var allowedOrigins = [
@@ -42,6 +44,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/api/profiles", profileController.route);
 
 app.use("/api/games", gameController.route);
+
+app.use("/api/achievements", achievementsController.route);
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);

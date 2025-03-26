@@ -1,6 +1,7 @@
 import { Table, Column, Model, DataType } from "sequelize-typescript";
 
 interface AchievementAttributes {
+  gameName: string;
   name: string;
   apiname: string;
   achieved: number;
@@ -25,28 +26,35 @@ export default class Achievement
     type: DataType.STRING,
     allowNull: false,
   })
-  name!: string;
+  gameName!: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
+  name!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    defaultValue: "Unknown",
+  })
   apiname!: string;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.INTEGER,
     allowNull: false,
   })
   achieved!: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.INTEGER,
     allowNull: false,
   })
   unlocktime!: number;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.INTEGER,
     allowNull: true,
   })
   defaultvalue?: number;
@@ -58,7 +66,7 @@ export default class Achievement
   displayName!: string;
 
   @Column({
-    type: DataType.NUMBER,
+    type: DataType.INTEGER,
     allowNull: true,
   })
   hidden?: number;

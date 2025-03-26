@@ -20,25 +20,26 @@ export class AchievementsController {
         try {
           console.log("Updating achievements");
           const { steamId } = req.params;
-          const updatedGames = await this.gamesService.fetchGames(steamId);
+          const updatedAchievements =
+            await this.achievementsService.fetchAchievements(steamId);
           // logs the updated results
           res.status(200).json({
-            message: `Games updated successfully`,
-            games: updatedGames,
+            message: `Achievements updated successfully`,
+            achievements: updatedAchievements,
           });
         } catch (error) {
-          res.status(500).json({ error: "Failed to update games" });
+          res.status(500).json({ error: "Failed to update achievements" });
         }
       }
     );
 
     this.route.get("/", async (req: Request, res: Response) => {
-      console.log("Get games called");
+      console.log("Get achievements called");
       try {
-        const games = await this.gamesService.getGames();
-        res.status(200).json(games);
+        const achievements = await this.achievementsService.getAchievements();
+        res.status(200).json(achievements);
       } catch (error) {
-        res.status(500).json({ error: "Failed to retrieve games" });
+        res.status(500).json({ error: "Failed to retrieve Achievements" });
       }
     });
   }
