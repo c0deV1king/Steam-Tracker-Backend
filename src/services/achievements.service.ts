@@ -147,7 +147,6 @@ export class AchievementsService {
             );
           }
         }
-        // Apply rate limit delay
         await this.rateLimitDelay(700, 1500);
       }
 
