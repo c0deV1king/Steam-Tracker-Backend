@@ -2,6 +2,7 @@ import { Sequelize } from "sequelize-typescript";
 import Profile from "../models/profile.model.js";
 import Game from "../models/games.model.js";
 import Achievement from "../models/achievements.model.js";
+import RecentGame from "../models/recent.games.model.js";
 import dbConfig from "../db/config.js";
 import dotenv from "dotenv";
 dotenv.config();
@@ -18,7 +19,7 @@ const sequelize = new Sequelize({
       rejectUnauthorized: false,
     },
   },
-  models: [Profile, Game, Achievement],
+  models: [Profile, Game, Achievement, RecentGame],
 });
 
 export default sequelize;
