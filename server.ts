@@ -55,6 +55,16 @@ app.use("/api/achievements", achievementsController.route);
 
 app.use("/api/recentgames", recentGameController.route);
 
+// root route
+app.get("/", (req, res) => {
+  const steamId = req.query.steamId;
+  if (steamId) {
+    res.send(`<h1>Welcome, Steam User ${steamId}</h1>`);
+  } else {
+    res.send("<h1>Welcome to the Steam Tracker</h1>");
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
