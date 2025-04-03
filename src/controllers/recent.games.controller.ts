@@ -33,7 +33,7 @@ export class RecentGameController {
       }
     );
 
-    this.route.get("/", async (req: Request, res: Response) => {
+    this.route.get("/:steamId", async (req: Request, res: Response) => {
       console.log("Get recent games called");
       try {
         const recentGames = await this.recentGamesService.getRecentGames();
