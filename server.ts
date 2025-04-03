@@ -20,6 +20,8 @@ var allowedOrigins = [
   "http://localhost:8080",
   "https://steam-tracker-demo-production.up.railway.app/",
   "https://steam-tracker.codeviking.io",
+  "http://localhost:3001",
+  "http://localhost:3000",
 ];
 
 console.log("Asking cors if I am okay to use...");
