@@ -32,7 +32,7 @@ export class GameController {
       }
     );
 
-    this.route.get("/", async (req: Request, res: Response) => {
+    this.route.get("/:steamId", async (req: Request, res: Response) => {
       console.log("Get games called");
       try {
         const games = await this.gamesService.getGames();
