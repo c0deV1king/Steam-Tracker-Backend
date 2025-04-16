@@ -37,7 +37,7 @@ export default class Achievement
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    defaultValue: "Unknown",
+    unique: true,
   })
   apiname!: string;
 

@@ -87,7 +87,9 @@ export class AchievementsService {
         appid: appid,
         gameName: playerAchievements.gameName,
         name: achievement.name,
+        apiname: achievement.name,
         displayName: achievement.displayName,
+        hidden: achievement.hidden,
         description: achievement.description,
         icon: achievement.icon,
         iconGray: achievement.icongray,
@@ -147,7 +149,7 @@ export class AchievementsService {
             );
           }
         }
-        await this.rateLimitDelay(700, 1500);
+        await this.rateLimitDelay(200, 500);
       }
 
       console.log("Achievements stored in database successfully.");
