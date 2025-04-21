@@ -41,6 +41,7 @@
   "devDependencies": {
     "@types/chai": "^5.0.1",
     "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/mocha": "^10.0.10",
     "@types/mysql": "^2.15.26",
     "@types/node": "^22.13.1",
