@@ -19,7 +19,11 @@ export class steamValidationController {
         const params = new URLSearchParams(req.query as any);
         const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
 
-        const returnToUrl = `${backendUrl}/api/validate-steam/`;
+        const returnToUrl = `${
+          backendUrl.startsWith("http://")
+            ? backendUrl.replace("http://", "https://")
+            : backendUrl
+        }/api/validate-steam/`;
         console.log("Return To URL:", returnToUrl);
         // Validate the Steam response
         const validationResponse = await axios.post(
