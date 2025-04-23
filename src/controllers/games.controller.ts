@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
 import { GamesService } from "../services/games.service.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 
 export class GameController {
   private gamesService: GamesService;
@@ -15,6 +16,7 @@ export class GameController {
   private initializeRoutes() {
     this.route.patch(
       "/update/:steamId",
+      authMiddleware,
       async (req: Request, res: Response) => {
         console.log("Update games called");
         try {
@@ -32,14 +34,18 @@ export class GameController {
       }
     );
 
-    this.route.get("/:steamId", async (req: Request, res: Response) => {
-      console.log("Get games called");
-      try {
-        const games = await this.gamesService.getGames();
-        res.status(200).json(games);
-      } catch (error) {
-        res.status(500).json({ error: "Failed to retrieve games" });
+    this.route.get(
+      "/:steamId",
+      authMiddleware,
+      async (req: Request, res: Response) => {
+        console.log("Get games called");
+        try {
+          const games = await this.gamesService.getGames();
+          res.status(200).json(games);
+        } catch (error) {
+          res.status(500).json({ error: "Failed to retrieve games" });
+        }
       }
-    });
+    );
   }
 }

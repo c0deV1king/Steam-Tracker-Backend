@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
 import { AchievementsService } from "../services/achievements.service.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 
 export class AchievementsController {
   private achievementsService: AchievementsService;
@@ -15,6 +16,7 @@ export class AchievementsController {
   private initializeRoutes() {
     this.route.patch(
       "/update/:steamId",
+      authMiddleware,
       async (req: Request, res: Response) => {
         console.log("Update achievements called");
         try {
@@ -33,7 +35,7 @@ export class AchievementsController {
       }
     );
 
-    this.route.get("/", async (req: Request, res: Response) => {
+    this.route.get("/", authMiddleware, async (req: Request, res: Response) => {
       console.log("Get achievements called");
       try {
         const achievements = await this.achievementsService.getAchievements();

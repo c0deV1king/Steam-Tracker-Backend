@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express";
 import { ProfileService } from "../services/profile.service.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 
 // creating a profile class
 // https://www.slingacademy.com/article/typescript-class-constructor-complete-guide/
@@ -22,6 +23,7 @@ export class ProfileController {
   private initializeRoutes() {
     this.route.patch(
       "/update/:steamId",
+      authMiddleware,
       async (req: Request, res: Response) => {
         console.log("Update profile called");
         try {
@@ -43,7 +45,7 @@ export class ProfileController {
       }
     );
 
-    this.route.get("/", async (req: Request, res: Response) => {
+    this.route.get("/", authMiddleware, async (req: Request, res: Response) => {
       console.log("Get profiles called");
       try {
         const profiles = await this.profileService.getProfiles();
