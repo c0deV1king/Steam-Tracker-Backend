@@ -117,6 +117,8 @@ export class AchievementsService {
             continue;
           }
 
+          await this.rateLimitDelay(200, 500);
+
           const achievements = await this.processAppId(game.appid);
 
           if (achievements.length > 0) {
@@ -149,7 +151,6 @@ export class AchievementsService {
             );
           }
         }
-        await this.rateLimitDelay(200, 500);
       }
 
       console.log("Achievements stored in database successfully.");
