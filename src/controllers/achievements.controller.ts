@@ -33,7 +33,7 @@ export class AchievementsController {
           res.status(500).json({ error: "Failed to update achievements" });
         }
       }
-    );
+    ); //test
 
     this.route.get("/", authMiddleware, async (req: Request, res: Response) => {
       console.log("Get achievements called");
