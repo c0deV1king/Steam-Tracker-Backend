@@ -12,6 +12,7 @@ interface AchievementAttributes {
   description?: string;
   icon: string;
   icongray: string;
+  percent: string;
 }
 
 @Table({
@@ -88,4 +89,10 @@ export default class Achievement
     allowNull: false,
   })
   icongray!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  percent!: string;
 }

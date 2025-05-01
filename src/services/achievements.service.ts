@@ -21,16 +21,12 @@ dotenv.config();
 
 export class AchievementsService {
   private steamApiKey: string;
-  private steamId: string;
 
   constructor() {
     this.steamApiKey = process.env.steamApiKey || "";
-    this.steamId = process.env.steamId || "";
 
-    if (!this.steamApiKey || !this.steamId) {
-      throw new Error(
-        "Steam API key or Steam ID not found in environment variables"
-      );
+    if (!this.steamApiKey) {
+      throw new Error("Steam API key not found in environment variables");
     }
   }
 
@@ -40,8 +36,8 @@ export class AchievementsService {
     );
   };
 
-  processAppId = async (appid: number) => {
-    console.log("Processing appid:", appid);
+  processAppId = async (appid: number, steamId: string) => {
+    console.log("Processing appid:", appid, "for steamId:", steamId);
 
     const gameSchemaUrl = `http://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/`;
     const gameSchemaParams = {
@@ -55,6 +51,19 @@ export class AchievementsService {
 
     const gameSchema = gameSchemaResponse.game || {};
 
+    // const gameName = gameSchema.gameName;
+
+    // const existingAchievements = await Achievement.findOne({
+    //   where: { gameName: gameName },
+    // });
+
+    // if (existingAchievements) {
+    //   console.log(
+    //     `Achievements for gameName "${gameName}" already exist. Skipping upsert.`
+    //   );
+    //   return [];
+    // }
+
     const achievements = gameSchema.availableGameStats?.achievements || [];
 
     if (achievements.length === 0) {
@@ -65,7 +74,7 @@ export class AchievementsService {
     const playerAchievementsUrl = `http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/`;
     const playerAchievementsParams = {
       key: this.steamApiKey,
-      steamid: this.steamId,
+      steamid: steamId,
       appid: appid,
     };
 
@@ -78,9 +87,35 @@ export class AchievementsService {
 
     const playerAchievements = playerAchievementsResponse.playerstats || {};
 
+    const globalAchievementPercentagesUrl = `https://api.steampowered.com/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/`;
+    const globalAchievementPercentagesParams = {
+      key: this.steamApiKey,
+      gameid: appid,
+    };
+
+    const { data: globalAchievementPercentagesResponse } = await axios.get(
+      globalAchievementPercentagesUrl,
+      {
+        params: globalAchievementPercentagesParams,
+      }
+    );
+
+    const globalAchievementPercentages =
+      globalAchievementPercentagesResponse.achievementpercentages
+        ?.achievements || [];
+
     const combinedAchievements = (achievements || []).map((achievement) => {
       const playerAchievement = (playerAchievements || []).achievements.find(
         (a: any) => a.apiname === achievement.name
+      );
+
+      console.log(
+        "Global Achievement Percentages:",
+        globalAchievementPercentages
+      );
+
+      const globalAchievement = globalAchievementPercentages.find(
+        (g: any) => g.name === achievement.name
       );
 
       return {
@@ -95,8 +130,25 @@ export class AchievementsService {
         iconGray: achievement.icongray,
         achieved: playerAchievement?.achieved || 0,
         unlockTime: playerAchievement?.unlocktime || 0,
+        percent: globalAchievement?.percent || 0,
       };
     });
+
+    for (const achievement of combinedAchievements) {
+      await Achievement.upsert({
+        gameName: achievement.gameName,
+        name: achievement.name,
+        apiname: achievement.apiname,
+        achieved: achievement.achieved,
+        unlocktime: achievement.unlockTime,
+        displayName: achievement.displayName,
+        hidden: achievement.hidden,
+        description: achievement.description,
+        icon: achievement.icon,
+        icongray: achievement.iconGray,
+        percent: achievement.percent,
+      });
+    }
 
     return combinedAchievements;
   };
@@ -119,7 +171,7 @@ export class AchievementsService {
 
           await this.rateLimitDelay(200, 500);
 
-          const achievements = await this.processAppId(game.appid);
+          const achievements = await this.processAppId(game.appid, steamId);
 
           if (achievements.length > 0) {
             for (const achievement of achievements) {
@@ -134,6 +186,7 @@ export class AchievementsService {
                 description: achievement.description,
                 icon: achievement.icon,
                 icongray: achievement.iconGray,
+                percent: achievement.percent,
               });
             }
           } else {
