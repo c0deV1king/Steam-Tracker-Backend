@@ -54,7 +54,7 @@ export class steamValidationController {
               );
             }
             const token = jwt.sign({ steamId }, jwtSecret, {
-              expiresIn: "24h",
+              expiresIn: "30day",
             });
 
             const frontendUrl =
