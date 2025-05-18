@@ -5,6 +5,7 @@ import sequelize from "../db/db.js";
 dotenv.config();
 
 interface CombinedGameData {
+  steamId: string;
   appid: number;
   gameName: string;
   playtime_forever: number;
@@ -20,16 +21,12 @@ interface SteamGameResponse {
 
 export class GamesService {
   private steamApiKey: string;
-  private steamId: string;
 
   constructor() {
     this.steamApiKey = process.env.steamApiKey || "";
-    this.steamId = process.env.steamId || "";
 
-    if (!this.steamApiKey || !this.steamId) {
-      throw new Error(
-        "Steam API key or Steam ID not found in environment variables"
-      );
+    if (!this.steamApiKey) {
+      throw new Error("Steam API key not found in environment variables");
     }
   }
 
@@ -42,7 +39,6 @@ export class GamesService {
   async fetchGames(steamId: string): Promise<Game[] | null> {
     console.log("Fetching Steam games for steamId:", steamId);
     try {
-      await sequelize.sync();
       const { data: allGamesResponse } = await axios.get<SteamGameResponse>(
         `http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/`,
         {
@@ -59,6 +55,7 @@ export class GamesService {
       if (games.length === 0) return null;
 
       const ownedGameData: CombinedGameData[] = games.map((game: any) => ({
+        steamId: steamId,
         appid: game.appid,
         gameName: game.name || "Unknown Game",
         playtime_forever: game.playtime_forever || 0,
@@ -71,6 +68,7 @@ export class GamesService {
       await Promise.all(
         ownedGameData.map((game) =>
           Game.upsert({
+            steamId: steamId,
             appid: game.appid,
             gameName: game.gameName,
             playtime_forever: game.playtime_forever,
@@ -81,7 +79,7 @@ export class GamesService {
 
       console.log("Games stored in database successfully.");
       return Game.findAll({
-        where: { appid: ownedGameData.map((g) => g.appid) },
+        where: { steamId: steamId, appid: ownedGameData.map((g) => g.appid) },
       });
     } catch (error) {
       console.error("Error fetching games:", error);
@@ -89,10 +87,9 @@ export class GamesService {
     }
   }
 
-  async getGames(): Promise<Game[]> {
+  async getGames(steamId: string): Promise<Game[]> {
     try {
-      await sequelize.sync({ force: false });
-      return await Game.findAll();
+      return await Game.findAll({ where: { steamId: steamId } });
     } catch (error) {
       console.error("Error retrieving games:", error);
       throw error;

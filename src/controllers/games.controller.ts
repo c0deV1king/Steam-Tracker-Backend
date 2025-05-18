@@ -40,7 +40,8 @@ export class GameController {
       async (req: Request, res: Response) => {
         console.log("Get games called");
         try {
-          const games = await this.gamesService.getGames();
+          const { steamId } = req.params;
+          const games = await this.gamesService.getGames(steamId);
           res.status(200).json(games);
         } catch (error) {
           res.status(500).json({ error: "Failed to retrieve games" });

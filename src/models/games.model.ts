@@ -1,12 +1,6 @@
 import { Table, Column, Model, DataType } from "sequelize-typescript";
 
-// temporarily commented out interfaces and columns until I figure out a better solution to them
-
-// interface Screenshot {
-//   id: number;
-//   path_thumbnail: string;
-//   path_full: string;
-// }
+// keep comments, this is data that i want to include later
 
 // interface Genres {
 //   id: string;
@@ -14,12 +8,12 @@ import { Table, Column, Model, DataType } from "sequelize-typescript";
 // }
 
 interface GameAttributes {
+  steamId: string;
   appid: number;
   playtime_forever?: number;
   gameName: string;
   // genres: Genres[];
   headerImage: string;
-  // screenshots?: Screenshot[];
   // developers?: string;
   // metacritic?: number;
 }
@@ -33,9 +27,16 @@ export default class Game
   implements GameAttributes
 {
   @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    primaryKey: true,
+  })
+  steamId!: string;
+
+  @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    unique: true,
+    primaryKey: true,
   })
   appid!: number;
 
@@ -63,13 +64,6 @@ export default class Game
     allowNull: false,
   })
   headerImage!: string;
-
-  // @Column({
-  //   type: DataType.JSON,
-  //   allowNull: true,
-  //   defaultValue: [],
-  // })
-  // screenshots?: Screenshot[];
 
   // @Column({
   //   type: DataType.STRING,

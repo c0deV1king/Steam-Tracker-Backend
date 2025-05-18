@@ -7,6 +7,7 @@ export interface Screenshot {
 }
 
 interface RecentGameAttributes {
+  steamId: string;
   appid: number;
   name: string;
   playtime_2weeks: number;
@@ -16,7 +17,7 @@ interface RecentGameAttributes {
 }
 
 @Table({
-  tableName: "recent games",
+  tableName: "recent_games",
   modelName: "RecentGame",
 })
 export default class RecentGame
@@ -24,9 +25,15 @@ export default class RecentGame
   implements RecentGameAttributes
 {
   @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    primaryKey: true,
+  })
+  steamId!: string;
+
+  @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    unique: true,
     primaryKey: true,
   })
   appid!: number;

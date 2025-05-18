@@ -5,20 +5,6 @@ import Game from "../models/games.model.js";
 import sequelize from "../db/db.js";
 dotenv.config();
 
-// for all the achievements info, we need to use schema and getplayerachievements. that will be two api calls per game.
-// schema has name(same as apiname), displayName, desc, icon, icongrey
-// getplayerachievements has apiname, achieved and unlock time
-// use apiname & name to match the acheivements together
-
-// flow:
-// use the games table in db to grab the appids
-// somehow check to see if the achievements are already in the db
-// if not, make a call to gameschema to get all games achievements, going through each appid
-// then make a call to getplayerachievements for each appid
-// match the achievements with name and api name
-// store the achievements in the db
-// logic to use: if statements and for loops
-
 export class AchievementsService {
   private steamApiKey: string;
 
@@ -50,19 +36,6 @@ export class AchievementsService {
     });
 
     const gameSchema = gameSchemaResponse.game || {};
-
-    // const gameName = gameSchema.gameName;
-
-    // const existingAchievements = await Achievement.findOne({
-    //   where: { gameName: gameName },
-    // });
-
-    // if (existingAchievements) {
-    //   console.log(
-    //     `Achievements for gameName "${gameName}" already exist. Skipping upsert.`
-    //   );
-    //   return [];
-    // }
 
     const achievements = gameSchema.availableGameStats?.achievements || [];
 
@@ -136,6 +109,8 @@ export class AchievementsService {
 
     for (const achievement of combinedAchievements) {
       await Achievement.upsert({
+        steamId: steamId,
+        appid: appid,
         gameName: achievement.gameName,
         name: achievement.name,
         apiname: achievement.apiname,
@@ -156,9 +131,8 @@ export class AchievementsService {
   async fetchAchievements(steamId: string): Promise<void> {
     console.log("Fetching acheivements for steamId:", steamId);
     try {
-      await sequelize.sync({ force: false });
-
       const games = await Game.findAll({
+        where: { steamId: steamId },
         attributes: ["appid"],
       });
 
@@ -176,6 +150,8 @@ export class AchievementsService {
           if (achievements.length > 0) {
             for (const achievement of achievements) {
               await Achievement.upsert({
+                steamId: steamId,
+                appid: game.appid,
                 gameName: achievement.gameName,
                 name: achievement.name,
                 apiname: achievement.apiname,
@@ -213,10 +189,9 @@ export class AchievementsService {
     }
   }
 
-  async getAchievements(): Promise<Achievement[]> {
+  async getAchievements(steamId: string): Promise<Achievement[]> {
     try {
-      await sequelize.sync({ force: false });
-      return await Achievement.findAll();
+      return await Achievement.findAll({ where: { steamId: steamId } });
     } catch (error) {
       console.error("Error retrieving games:", error);
       throw error;

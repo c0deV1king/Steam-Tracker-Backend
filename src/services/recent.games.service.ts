@@ -20,6 +20,7 @@ interface GameScreenshotsResponse {
 }
 
 interface CombinedGameData {
+  steamId: string;
   appid: number;
   name: string;
   playtime_2weeks: number;
@@ -37,16 +38,12 @@ interface SteamGameResponse {
 
 export class RecentGamesService {
   private steamApiKey: string;
-  private steamId: string;
 
   constructor() {
     this.steamApiKey = process.env.steamApiKey || "";
-    this.steamId = process.env.steamId || "";
 
-    if (!this.steamApiKey || !this.steamId) {
-      throw new Error(
-        "Steam API key or Steam ID not found in environment variables"
-      );
+    if (!this.steamApiKey) {
+      throw new Error("Steam API key not found in environment variables");
     }
   }
 
@@ -89,7 +86,6 @@ export class RecentGamesService {
   async fetchRecentGames(steamId: string): Promise<RecentGame[] | null> {
     console.log("Fetching recent Steam games for steamId:", steamId);
     try {
-      await sequelize.sync();
       const { data: allRecentGamesResponse } =
         await axios.get<SteamGameResponse>(
           `https://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v1/`,
@@ -106,6 +102,7 @@ export class RecentGamesService {
 
       const recentGameData: CombinedGameData[] = recentGames.map(
         (game: any) => ({
+          steamId: steamId,
           appid: game.appid,
           name: game.name || "Unknown Game",
           playtime_2weeks: game.playtime_2weeks || 0,
@@ -119,9 +116,7 @@ export class RecentGamesService {
       for (const game of recentGameData) {
         await this.rateLimitDelay(300, 700);
         const screenshots = await this.fetchGameScreenshots(game.appid);
-        if (screenshots) {
-          game.screenshots = screenshots;
-        }
+        game.screenshots = screenshots || [];
       }
 
       await this.rateLimitDelay(300, 700);
@@ -131,6 +126,7 @@ export class RecentGamesService {
       await Promise.all(
         recentGameData.map((game) =>
           RecentGame.upsert({
+            steamId: steamId,
             appid: game.appid,
             name: game.name,
             playtime_2weeks: game.playtime_2weeks,
@@ -146,7 +142,7 @@ export class RecentGamesService {
       );
 
       return RecentGame.findAll({
-        where: { appid: recentGameData.map((g) => g.appid) },
+        where: { steamId: steamId, appid: recentGameData.map((g) => g.appid) },
       });
     } catch (error) {
       console.error("Error fetching recent games:", error);
@@ -154,10 +150,9 @@ export class RecentGamesService {
     }
   }
 
-  async getRecentGames(): Promise<RecentGame[]> {
+  async getRecentGames(steamId: string): Promise<RecentGame[]> {
     try {
-      await sequelize.sync({ force: false });
-      return await RecentGame.findAll();
+      return await RecentGame.findAll({ where: { steamId: steamId } });
     } catch (error) {
       console.error("Error retrieving recent games:", error);
       throw error;

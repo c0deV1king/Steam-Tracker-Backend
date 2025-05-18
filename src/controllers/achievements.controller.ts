@@ -22,14 +22,13 @@ export class AchievementsController {
         try {
           console.log("Updating achievements");
           const { steamId } = req.params;
-          const updatedAchievements =
-            await this.achievementsService.fetchAchievements(steamId);
+          await this.achievementsService.fetchAchievements(steamId);
           // logs the updated results
           res.status(200).json({
             message: `Achievements updated successfully`,
-            achievements: updatedAchievements,
           });
         } catch (error) {
+          console.error("Failed to retrieve achievements:", error);
           res.status(500).json({ error: "Failed to update achievements" });
         }
       }
@@ -54,6 +53,7 @@ export class AchievementsController {
             achievements: updatedAchievements,
           });
         } catch (error) {
+          console.error("Failed to retrieve achievements:", error);
           res.status(500).json({ error: "Failed to update achievements" });
         }
       }
@@ -76,6 +76,7 @@ export class AchievementsController {
             achievements,
           });
         } catch (error) {
+          console.error("Failed to retrieve achievements:", error);
           res.status(500).json({
             error: `Failed to retrieve achievements for appid: ${req.params.appid}`,
           });
@@ -83,14 +84,22 @@ export class AchievementsController {
       }
     );
 
-    this.route.get("/", authMiddleware, async (req: Request, res: Response) => {
-      console.log("Get achievements called");
-      try {
-        const achievements = await this.achievementsService.getAchievements();
-        res.status(200).json(achievements);
-      } catch (error) {
-        res.status(500).json({ error: "Failed to retrieve Achievements" });
+    this.route.get(
+      "/:steamId",
+      authMiddleware,
+      async (req: Request, res: Response) => {
+        console.log("Get achievements called");
+        try {
+          const { steamId } = req.params;
+          const achievements = await this.achievementsService.getAchievements(
+            steamId
+          );
+          res.status(200).json(achievements);
+        } catch (error) {
+          console.error("Failed to retrieve achievements:", error);
+          res.status(500).json({ error: "Failed to retrieve Achievements" });
+        }
       }
-    });
+    );
   }
 }

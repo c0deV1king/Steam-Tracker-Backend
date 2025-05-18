@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import sequelize from "./src/db/db.js";
 dotenv.config();
 import cors from "cors";
 const port = process.env.PORT || 3000;
@@ -67,6 +68,13 @@ app.get("/", (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port: ${port}`);
-});
+try {
+  await sequelize.sync({ force: false });
+  console.log("Database synchronized");
+
+  app.listen(port, () => {
+    console.log(`Server running on port: ${port}`);
+  });
+} catch (error) {
+  console.error("Failed to sync database:", error);
+}

@@ -1,6 +1,8 @@
 import { Table, Column, Model, DataType } from "sequelize-typescript";
 
 interface AchievementAttributes {
+  steamId: string;
+  appid: number;
   gameName: string;
   name: string;
   apiname: string;
@@ -26,6 +28,20 @@ export default class Achievement
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    primaryKey: true,
+  })
+  steamId!: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    primaryKey: true,
+  })
+  appid!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
   })
   gameName!: string;
 
@@ -38,7 +54,7 @@ export default class Achievement
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
+    primaryKey: true,
   })
   apiname!: string;
 

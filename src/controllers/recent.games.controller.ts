@@ -30,6 +30,7 @@ export class RecentGameController {
             recentGames: updatedRecentGames,
           });
         } catch (error) {
+          console.error("Failed to retrieve recent games:", error);
           res.status(500).json({ error: "Failed to update recent games" });
         }
       }
@@ -41,9 +42,13 @@ export class RecentGameController {
       async (req: Request, res: Response) => {
         console.log("Get recent games called");
         try {
-          const recentGames = await this.recentGamesService.getRecentGames();
+          const { steamId } = req.params;
+          const recentGames = await this.recentGamesService.getRecentGames(
+            steamId
+          );
           res.status(200).json(recentGames);
         } catch (error) {
+          console.error("Failed to retrieve recent games:", error);
           res.status(500).json({ error: "Failed to retrieve recent games" });
         }
       }
