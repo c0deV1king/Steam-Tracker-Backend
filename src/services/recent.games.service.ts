@@ -1,7 +1,6 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import RecentGame from "../models/recent.games.model.js";
-import sequelize from "../db/db.js";
 dotenv.config();
 
 interface Screenshot {

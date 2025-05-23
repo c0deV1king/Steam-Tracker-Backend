@@ -2,7 +2,6 @@ import axios from "axios";
 import dotenv from "dotenv";
 import Achievement from "../models/achievements.model.js";
 import Game from "../models/games.model.js";
-import sequelize from "../db/db.js";
 dotenv.config();
 
 export class AchievementsService {
@@ -82,11 +81,6 @@ export class AchievementsService {
         (a: any) => a.apiname === achievement.name
       );
 
-      console.log(
-        "Global Achievement Percentages:",
-        globalAchievementPercentages
-      );
-
       const globalAchievement = globalAchievementPercentages.find(
         (g: any) => g.name === achievement.name
       );
@@ -106,24 +100,6 @@ export class AchievementsService {
         percent: globalAchievement?.percent || 0,
       };
     });
-
-    for (const achievement of combinedAchievements) {
-      await Achievement.upsert({
-        steamId: steamId,
-        appid: appid,
-        gameName: achievement.gameName,
-        name: achievement.name,
-        apiname: achievement.apiname,
-        achieved: achievement.achieved,
-        unlocktime: achievement.unlockTime,
-        displayName: achievement.displayName,
-        hidden: achievement.hidden,
-        description: achievement.description,
-        icon: achievement.icon,
-        icongray: achievement.iconGray,
-        percent: achievement.percent,
-      });
-    }
 
     return combinedAchievements;
   };
@@ -148,8 +124,8 @@ export class AchievementsService {
           const achievements = await this.processAppId(game.appid, steamId);
 
           if (achievements.length > 0) {
-            for (const achievement of achievements) {
-              await Achievement.upsert({
+            await Achievement.bulkCreate(
+              achievements.map((achievement: any) => ({
                 steamId: steamId,
                 appid: game.appid,
                 gameName: achievement.gameName,
@@ -163,8 +139,25 @@ export class AchievementsService {
                 icon: achievement.icon,
                 icongray: achievement.iconGray,
                 percent: achievement.percent,
-              });
-            }
+              })),
+              {
+                updateOnDuplicate: [
+                  "steamId",
+                  "appid",
+                  "gameName",
+                  "name",
+                  "apiname",
+                  "achieved",
+                  "unlocktime",
+                  "displayName",
+                  "hidden",
+                  "description",
+                  "icon",
+                  "icongray",
+                  "percent",
+                ],
+              }
+            );
           } else {
             console.log(`No achievements found for appid: ${game.appid}`);
           }
