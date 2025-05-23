@@ -1,6 +1,7 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import RecentGame from "../models/recent.games.model.js";
+import { rateLimitDelay } from "../utils.js";
 dotenv.config();
 
 interface Screenshot {
@@ -45,12 +46,6 @@ export class RecentGamesService {
       throw new Error("Steam API key not found in environment variables");
     }
   }
-
-  rateLimitDelay = (min: number, max: number): Promise<void> => {
-    return new Promise((resolve) =>
-      setTimeout(resolve, Math.random() * (max - min) + min)
-    );
-  };
 
   async fetchGameScreenshots(appid: number): Promise<Screenshot[] | null> {
     try {
@@ -113,12 +108,12 @@ export class RecentGamesService {
 
       // Fetch screenshots for each game, with rate limiting
       for (const game of recentGameData) {
-        await this.rateLimitDelay(300, 700);
+        await rateLimitDelay(300, 700);
         const screenshots = await this.fetchGameScreenshots(game.appid);
         game.screenshots = screenshots || [];
       }
 
-      await this.rateLimitDelay(300, 700);
+      await rateLimitDelay(300, 700);
       console.log("Fetch recent games finished");
 
       // Upsert games with screenshots

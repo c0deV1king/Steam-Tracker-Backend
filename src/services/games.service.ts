@@ -1,6 +1,7 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import Game from "../models/games.model.js";
+import { rateLimitDelay } from "../utils.js";
 dotenv.config();
 
 interface CombinedGameData {
@@ -29,12 +30,6 @@ export class GamesService {
     }
   }
 
-  rateLimitDelay = (min: number, max: number): Promise<void> => {
-    return new Promise((resolve) =>
-      setTimeout(resolve, Math.random() * (max - min) + min)
-    );
-  };
-
   async fetchGames(steamId: string): Promise<Game[] | null> {
     console.log("Fetching Steam games for steamId:", steamId);
     try {
@@ -61,7 +56,7 @@ export class GamesService {
         headerImage: `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`,
       }));
 
-      await this.rateLimitDelay(300, 700);
+      await rateLimitDelay(300, 700);
       console.log("fetchGames finished");
 
       await Promise.all(

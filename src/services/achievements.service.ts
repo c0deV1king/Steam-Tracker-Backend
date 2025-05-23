@@ -2,6 +2,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 import Achievement from "../models/achievements.model.js";
 import Game from "../models/games.model.js";
+import { rateLimitDelay } from "../utils.js";
 dotenv.config();
 
 export class AchievementsService {
@@ -14,12 +15,6 @@ export class AchievementsService {
       throw new Error("Steam API key not found in environment variables");
     }
   }
-
-  rateLimitDelay = (min: number, max: number): Promise<void> => {
-    return new Promise((resolve) =>
-      setTimeout(resolve, Math.random() * (max - min) + min)
-    );
-  };
 
   processAppId = async (appid: number, steamId: string) => {
     console.log("Processing appid:", appid, "for steamId:", steamId);
@@ -119,7 +114,7 @@ export class AchievementsService {
             continue;
           }
 
-          await this.rateLimitDelay(200, 500);
+          await rateLimitDelay(200, 500);
 
           const achievements = await this.processAppId(game.appid, steamId);
 
