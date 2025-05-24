@@ -1,16 +1,7 @@
 import axios from "axios";
 import dotenv from "dotenv";
 import Game from "../models/games.model.js";
-import { rateLimitDelay } from "../utils.js";
 dotenv.config();
-
-interface CombinedGameData {
-  steamId: string;
-  appid: number;
-  gameName: string;
-  playtime_forever: number;
-  headerImage: string;
-}
 
 interface SteamGameResponse {
   response: {
@@ -48,33 +39,21 @@ export class GamesService {
 
       if (games.length === 0) return null;
 
-      const ownedGameData: CombinedGameData[] = games.map((game: any) => ({
-        steamId: steamId,
-        appid: game.appid,
-        gameName: game.name || "Unknown Game",
-        playtime_forever: game.playtime_forever || 0,
-        headerImage: `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`,
-      }));
-
-      await rateLimitDelay(300, 700);
-      console.log("fetchGames finished");
-
-      await Promise.all(
-        ownedGameData.map((game) =>
-          Game.upsert({
-            steamId: steamId,
-            appid: game.appid,
-            gameName: game.gameName,
-            playtime_forever: game.playtime_forever,
-            headerImage: game.headerImage,
-          })
-        )
+      const gamesList = await Game.bulkCreate(
+        games.map((game) => ({
+          steamId: steamId,
+          appid: game.appid,
+          gameName: game.name || "Unknown Game",
+          playtime_forever: game.playtime_forever || 0,
+          headerImage: `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`,
+        })),
+        {
+          updateOnDuplicate: ["gameName", "playtime_forever", "headerImage"],
+        }
       );
 
       console.log("Games stored in database successfully.");
-      return Game.findAll({
-        where: { steamId: steamId, appid: ownedGameData.map((g) => g.appid) },
-      });
+      return gamesList;
     } catch (error) {
       console.error("Error fetching games:", error);
       throw error;

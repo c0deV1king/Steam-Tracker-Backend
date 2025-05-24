@@ -23,7 +23,6 @@ export class GameController {
           console.log("Updating games");
           const { steamId } = req.params;
           const updatedGames = await this.gamesService.fetchGames(steamId);
-          // logs the updated results
           res.status(200).json({
             message: `Games updated successfully`,
             games: updatedGames,

@@ -17,9 +17,6 @@ export class ProfileController {
     console.log("Profile Controller initialized");
   }
 
-  // creating the routes to get and update your profile using an endpoint
-  // patch is used to update and store the data
-  // get is used to retrieve the data
   private initializeRoutes() {
     this.route.patch(
       "/update/:steamId",
@@ -29,8 +26,6 @@ export class ProfileController {
         try {
           console.log("Updating profile");
           const { steamId } = req.params;
-          // initializes a profileService instance and calls the
-          // updateProfile method with the steamid and body parameters
           const updatedProfile = await this.profileService.updateProfile(
             steamId
           );
@@ -45,14 +40,19 @@ export class ProfileController {
       }
     );
 
-    this.route.get("/", authMiddleware, async (req: Request, res: Response) => {
-      console.log("Get profiles called");
-      try {
-        const profiles = await this.profileService.getProfiles();
-        res.status(200).json(profiles);
-      } catch (error) {
-        res.status(500).json({ error: "Failed to retrieve profiles" });
+    this.route.get(
+      "/:steamId",
+      authMiddleware,
+      async (req: Request, res: Response) => {
+        console.log("Get profiles called");
+        try {
+          const { steamId } = req.params;
+          const profiles = await this.profileService.getProfiles(steamId);
+          res.status(200).json(profiles);
+        } catch (error) {
+          res.status(500).json({ error: "Failed to retrieve profiles" });
+        }
       }
-    });
+    );
   }
 }

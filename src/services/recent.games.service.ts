@@ -61,12 +61,7 @@ export class RecentGamesService {
       );
 
       // Check if data exists and has the expected structure
-      if (
-        data &&
-        data[appid] &&
-        data[appid].success &&
-        data[appid].data?.screenshots
-      ) {
+      if (data?.[appid]?.success && data?.[appid]?.data?.screenshots) {
         return data[appid].data.screenshots;
       }
 
@@ -116,19 +111,27 @@ export class RecentGamesService {
       await rateLimitDelay(300, 700);
       console.log("Fetch recent games finished");
 
-      // Upsert games with screenshots
-      await Promise.all(
-        recentGameData.map((game) =>
-          RecentGame.upsert({
-            steamId: steamId,
-            appid: game.appid,
-            name: game.name,
-            playtime_2weeks: game.playtime_2weeks,
-            playtime_forever: game.playtime_forever,
-            headerImage: game.headerImage,
-            screenshots: game.screenshots || [],
-          })
-        )
+      await RecentGame.bulkCreate(
+        recentGameData.map((game) => ({
+          steamId: steamId,
+          appid: game.appid,
+          name: game.name,
+          playtime_2weeks: game.playtime_2weeks,
+          playtime_forever: game.playtime_forever,
+          headerImage: game.headerImage,
+          screenshots: game.screenshots || [],
+        })),
+        {
+          updateOnDuplicate: [
+            "steamId",
+            "appid",
+            "name",
+            "playtime_2weeks",
+            "playtime_forever",
+            "headerImage",
+            "screenshots",
+          ],
+        }
       );
 
       console.log(
