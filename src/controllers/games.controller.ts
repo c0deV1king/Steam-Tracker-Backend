@@ -33,6 +33,28 @@ export class GameController {
       }
     );
 
+    this.route.patch(
+      "/update/:appid/:steamId",
+      authMiddleware,
+      async (req: Request, res: Response) => {
+        console.log("Update games called");
+        try {
+          console.log("Updating games");
+          const { appid, steamId } = req.params;
+          const updatedGames = await this.gamesService.fetchExtraGameDetails(
+            appid,
+            steamId
+          );
+          res.status(200).json({
+            message: `Extra game details updated successfully`,
+            games: updatedGames,
+          });
+        } catch (error) {
+          res.status(500).json({ error: "Failed to update games" });
+        }
+      }
+    );
+
     this.route.get(
       "/:steamId",
       authMiddleware,

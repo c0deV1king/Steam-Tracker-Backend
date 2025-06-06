@@ -1,21 +1,25 @@
 import { Table, Column, Model, DataType } from "sequelize-typescript";
 
-// keep comments, this is data that i want to include later
+interface Genres {
+  id: string;
+  description: string;
+}
 
-// interface Genres {
-//   id: string;
-//   description: string;
-// }
+interface Categories {
+  id: string;
+  description: string;
+}
 
 interface GameAttributes {
   steamId: string;
   appid: number;
   playtime_forever?: number;
   gameName: string;
-  // genres: Genres[];
+  genres: Genres[];
   headerImage: string;
-  // developers?: string;
-  // metacritic?: number;
+  developers?: string;
+  publishers?: string;
+  categories?: Categories[];
 }
 
 @Table({
@@ -52,12 +56,12 @@ export default class Game
   })
   gameName!: string;
 
-  // @Column({
-  //   type: DataType.JSON,
-  //   allowNull: false,
-  //   defaultValue: [],
-  // })
-  // genres!: Genres[];
+  @Column({
+    type: DataType.JSON,
+    allowNull: false,
+    defaultValue: [],
+  })
+  genres!: Genres[];
 
   @Column({
     type: DataType.STRING,
@@ -65,15 +69,22 @@ export default class Game
   })
   headerImage!: string;
 
-  // @Column({
-  //   type: DataType.STRING,
-  //   allowNull: true,
-  // })
-  // developers?: string;
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  developers?: string;
 
-  //   @Column({
-  //     type: DataType.INTEGER,
-  //     allowNull: true,
-  //   })
-  //   metacritic?: number;
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  publishers?: string;
+
+  @Column({
+    type: DataType.JSON,
+    allowNull: true,
+    defaultValue: [],
+  })
+  categories?: Categories[];
 }

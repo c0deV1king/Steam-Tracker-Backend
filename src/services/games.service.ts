@@ -10,6 +10,18 @@ interface SteamGameResponse {
   };
 }
 
+interface SteamAppDetailsResponse {
+  [appid: string]: {
+    success: boolean;
+    data?: {
+      developers?: string[];
+      publishers?: string[];
+      genres?: { description: string }[];
+      categories?: { description: string }[];
+    };
+  };
+}
+
 export class GamesService {
   private steamApiKey: string;
 
@@ -46,6 +58,9 @@ export class GamesService {
           gameName: game.name || "Unknown Game",
           playtime_forever: game.playtime_forever || 0,
           headerImage: `https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${game.appid}/header.jpg`,
+          genres: game.genres || [],
+          developers: game.developers ? game.developers.join(", ") : undefined,
+          publishers: game.publishers ? game.publishers.join(", ") : undefined,
         })),
         {
           updateOnDuplicate: ["gameName", "playtime_forever", "headerImage"],
@@ -56,6 +71,65 @@ export class GamesService {
       return gamesList;
     } catch (error) {
       console.error("Error fetching games:", error);
+      throw error;
+    }
+  }
+
+  async fetchExtraGameDetails(appid: string, steamId: string): Promise<void> {
+    try {
+      const { data: appDetailsResponse } =
+        await axios.get<SteamAppDetailsResponse>(
+          `https://store.steampowered.com/api/appdetails`,
+          {
+            params: {
+              appids: appid,
+            },
+          }
+        );
+
+      const gameData = appDetailsResponse[appid.toString()];
+
+      if (!gameData || !gameData.success || !gameData.data) {
+        console.log(`No additional details found for appid: ${appid}`);
+        return;
+      }
+
+      const details = gameData.data;
+
+      // Update the existing game record with additional details
+      const [updatedCount] = await Game.update(
+        {
+          developers: details.developers
+            ? details.developers.join(", ")
+            : undefined,
+          publishers: details.publishers
+            ? details.publishers.join(", ")
+            : undefined,
+          genres: details.genres
+            ? details.genres.map((genre, index) => ({
+                id: index.toString(),
+                description: genre.description,
+              }))
+            : undefined,
+          categories: details.categories
+            ? details.categories.map((category, index) => ({
+                id: index.toString(),
+                description: category.description,
+              }))
+            : undefined,
+        },
+        {
+          where: {
+            appid: appid,
+            steamId: steamId,
+          },
+        }
+      );
+      if (updatedCount > 0) {
+        console.log(`Extra details updated for game with appid: ${appid}`);
+      }
+    } catch (error) {
+      console.error(`Error fetching extra details for appid ${appid}:`, error);
       throw error;
     }
   }
