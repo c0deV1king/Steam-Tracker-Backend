@@ -10,6 +10,6 @@ Tech Stack: <br>
 ![Success](https://img.shields.io/static/v1?label=&message=Node.js&color=228B22&style=plastic) ![Success](https://img.shields.io/static/v1?label=&message=Express&color=FFFAF0&style=plastic) ![Success](https://img.shields.io/static/v1?label=&message=Railway&color=4B0082&style=plastic) <br>
 
 Testing done with:
-[Success](https://img.shields.io/static/v1?label=&message=Mocha&color=A27707&style=plastic)
-[Success](https://img.shields.io/static/v1?label=&message=Chai&color=A27707&style=plastic)
-[Success](https://img.shields.io/static/v1?label=&message=Sinon&color=A27707&style=plastic)
+![Success](https://img.shields.io/static/v1?label=&message=Mocha&color=A27707&style=plastic)
+![Success](https://img.shields.io/static/v1?label=&message=Chai&color=A27707&style=plastic)
+![Success](https://img.shields.io/static/v1?label=&message=Sinon&color=A27707&style=plastic)
