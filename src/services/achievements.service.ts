@@ -100,12 +100,25 @@ export class AchievementsService {
   };
 
   async fetchAchievements(steamId: string): Promise<void> {
-    console.log("Fetching acheivements for steamId:", steamId);
+    console.log("Fetching achievements for steamId:", steamId);
     try {
+      if (!steamId || !/^\d{17}$/.test(steamId)) {
+        throw new Error(`Invalid Steam ID format: ${steamId}`);
+      }
+
       const games = await Game.findAll({
         where: { steamId: steamId },
         attributes: ["appid"],
       });
+
+      if (games.length === 0) {
+        console.log(`No games found for steamId: ${steamId}`);
+        return;
+      }
+
+      let successCount = 0;
+      let errorCount = 0;
+      const errors: string[] = [];
 
       for (const game of games) {
         try {
@@ -153,21 +166,47 @@ export class AchievementsService {
                 ],
               }
             );
+            successCount++;
+            console.log(
+              `Successfully processed ${achievements.length} achievements for appid: ${game.appid}`
+            );
           } else {
             console.log(`No achievements found for appid: ${game.appid}`);
           }
         } catch (error: any) {
+          errorCount++;
           if (error.response?.status === 403) {
             console.log(
-              `Skipping appid ${game.appid} due to 403 Forbidden. Game details incomplete`
+              `Skipping appid ${game.appid} due to 403 Forbidden. Game details incomplete or private`
             );
+            errors.push(
+              `AppID ${game.appid}: Access forbidden (private profile or game)`
+            );
+          } else if (error.response?.status === 429) {
+            console.log(
+              `Rate limited for appid ${game.appid}, will continue with next game`
+            );
+            errors.push(`AppID ${game.appid}: Rate limited`);
           } else {
             console.error(
               `Error processing appid ${game.appid}:`,
               error.message
             );
+            errors.push(`AppID ${game.appid}: ${error.message}`);
           }
+          // Continue processing other games instead of stopping
         }
+      }
+
+      console.log(
+        `Achievement sync completed. Success: ${successCount}, Errors: ${errorCount}`
+      );
+
+      // Only throw if ALL games failed or if there was a critical error
+      if (successCount === 0 && errorCount > 0) {
+        throw new Error(
+          `Failed to process any achievements. Errors: ${errors.join(", ")}`
+        );
       }
 
       console.log("Achievements stored in database successfully.");
