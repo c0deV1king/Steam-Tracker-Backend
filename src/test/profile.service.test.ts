@@ -1,205 +1,312 @@
 import { expect } from "chai";
 import sinon from "sinon";
-import axios from "axios";
-import Profile from "../models/profile.model.js";
-import { ProfileService } from "../services/profile.service.js";
+import esmock from "esmock";
 
 describe("ProfileService", () => {
-  let profileService: ProfileService;
+  let service: any;
   let axiosGetStub: sinon.SinonStub;
-  let profileFindOneStub: sinon.SinonStub;
-  let profileCreateStub: sinon.SinonStub;
-  let profileUpdateStub: sinon.SinonStub;
+  let profileUpsertStub: sinon.SinonStub;
+  let profileFindAllStub: sinon.SinonStub;
+  let ProfileService: any;
 
-  beforeEach(() => {
-    // Mock environment variables
+  beforeEach(async () => {
     process.env.steamApiKey = "test-api-key";
-    process.env.steamId = "test-steam-id";
 
-    profileService = new ProfileService();
+    axiosGetStub = sinon.stub();
+    profileUpsertStub = sinon.stub();
+    profileFindAllStub = sinon.stub();
 
-    // Stub the axios.get method
-    axiosGetStub = sinon.stub(axios, "get");
+    const module = await esmock("../services/profile.service.js", {
+      axios: {
+        default: { get: axiosGetStub },
+        get: axiosGetStub,
+      },
+      "../models/profile.model.js": {
+        default: {
+          upsert: profileUpsertStub,
+          findAll: profileFindAllStub,
+        },
+      },
+    });
 
-    // Stub the Profile model methods
-    profileFindOneStub = sinon.stub(Profile, "findOne");
-    profileCreateStub = sinon.stub(Profile, "create");
-    profileUpdateStub = sinon.stub(Profile, "update");
+    ProfileService = module.ProfileService;
+    service = new ProfileService();
   });
 
   afterEach(() => {
-    // Restore all stubs after each test
     sinon.restore();
+    delete process.env.steamApiKey;
+  });
+
+  describe("constructor", () => {
+    it("should throw error when Steam API key is not provided", () => {
+      // Temporarily store and remove the API key
+      const originalApiKey = process.env.steamApiKey;
+      delete process.env.steamApiKey;
+
+      try {
+        expect(() => new ProfileService()).to.throw(
+          "Steam API key or Steam ID not found in environment variables"
+        );
+      } finally {
+        // Restore the original API key
+        if (originalApiKey) {
+          process.env.steamApiKey = originalApiKey;
+        }
+      }
+    });
+
+    it("should initialize with Steam API key from environment", () => {
+      expect(() => new ProfileService()).to.not.throw();
+    });
   });
 
   describe("updateProfile", () => {
-    it("should fetch and update an existing profile", async () => {
-      const steamId = "123456789";
-      const mockProfileData = {
-        response: {
-          players: [
-            {
-              steamid: steamId,
-              personaname: "TestUser",
-              profileurl: "http://example.com",
-              avatarfull: "http://example.com/avatar.jpg",
-              loccountrycode: "US",
-              timecreated: 1620000000,
-            },
-          ],
+    const mockSteamId = "76561198000000000";
+
+    it("should fetch and store profile successfully", async () => {
+      const mockProfileResponse = {
+        data: {
+          response: {
+            players: [
+              {
+                steamid: mockSteamId,
+                personaname: "TestUser",
+                profileurl: "https://steamcommunity.com/id/testuser/",
+                avatarfull: "https://avatars.steamstatic.com/test_full.jpg",
+                loccountrycode: "US",
+                timecreated: 1234567890,
+              },
+            ],
+          },
         },
       };
 
-      const existingProfile = {
-        steamId,
-        personaName: "OldUser",
-        profileUrl: "http://oldexample.com",
-        avatarFull: "http://oldexample.com/avatar.jpg",
+      const mockStoredProfile = {
+        steamId: mockSteamId,
+        personaName: "TestUser",
+        profileUrl: "https://steamcommunity.com/id/testuser/",
+        avatarFull: "https://avatars.steamstatic.com/test_full.jpg",
+        locCountryCode: "US",
+        timeCreated: 1234567890,
+      };
+
+      axiosGetStub.resolves(mockProfileResponse);
+      profileUpsertStub.resolves([mockStoredProfile, true]); // true means created
+
+      const result = await service.updateProfile(mockSteamId);
+
+      expect(axiosGetStub.calledOnce).to.be.true;
+      expect(
+        axiosGetStub.calledWith(
+          "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/",
+          {
+            params: {
+              key: "test-api-key",
+              steamids: mockSteamId,
+            },
+          }
+        )
+      ).to.be.true;
+
+      expect(profileUpsertStub.calledOnce).to.be.true;
+      expect(
+        profileUpsertStub.calledWith({
+          steamId: mockSteamId,
+          personaName: "TestUser",
+          profileUrl: "https://steamcommunity.com/id/testuser/",
+          avatarFull: "https://avatars.steamstatic.com/test_full.jpg",
+          locCountryCode: "US",
+          timeCreated: 1234567890,
+        })
+      ).to.be.true;
+
+      expect(result).to.deep.equal(mockStoredProfile);
+    });
+
+    it("should update existing profile successfully", async () => {
+      const mockProfileResponse = {
+        data: {
+          response: {
+            players: [
+              {
+                steamid: mockSteamId,
+                personaname: "UpdatedUser",
+                profileurl: "https://steamcommunity.com/id/updateduser/",
+                avatarfull: "https://avatars.steamstatic.com/updated_full.jpg",
+                loccountrycode: "CA",
+                timecreated: 1234567890,
+              },
+            ],
+          },
+        },
+      };
+
+      const mockStoredProfile = {
+        steamId: mockSteamId,
+        personaName: "UpdatedUser",
+        profileUrl: "https://steamcommunity.com/id/updateduser/",
+        avatarFull: "https://avatars.steamstatic.com/updated_full.jpg",
         locCountryCode: "CA",
-        timeCreated: 1610000000,
+        timeCreated: 1234567890,
       };
 
-      const updatedProfileData = {
-        steamId,
-        personaName: "TestUser",
-        profileUrl: "http://example.com",
-        avatarFull: "http://example.com/avatar.jpg",
-        locCountryCode: "US",
-        timeCreated: 1620000000,
-      };
+      axiosGetStub.resolves(mockProfileResponse);
+      profileUpsertStub.resolves([mockStoredProfile, false]); // false means updated
 
-      // Setup stubs with appropriate return values
-      // The axios response should match what your service expects
-      axiosGetStub.resolves({
-        data: mockProfileData,
-      });
+      const result = await service.updateProfile(mockSteamId);
 
-      // First findOne call returns the existing profile
-      profileFindOneStub.onFirstCall().resolves(existingProfile);
-      // Second findOne call after update returns the updated profile
-      profileFindOneStub.onSecondCall().resolves(updatedProfileData);
-
-      // Update stub just needs to resolve (the value isn't used)
-      profileUpdateStub.resolves([1]);
-
-      const result = await profileService.updateProfile(steamId);
-
-      // Verify axios.get was called once with the right parameters
-      expect(axiosGetStub.calledOnce).to.be.true;
-      expect(axiosGetStub.firstCall.args[0]).to.equal(
-        "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/"
-      );
-      expect(axiosGetStub.firstCall.args[1].params).to.have.property(
-        "steamids",
-        steamId
-      );
-
-      // Verify findOne was called twice (once before update, once after)
-      expect(profileFindOneStub.calledTwice).to.be.true;
-
-      // Verify first findOne call had right where clause
-      expect(profileFindOneStub.firstCall.args[0]).to.deep.include({
-        where: { steamId },
-      });
-
-      // Verify update was called with right parameters
-      expect(profileUpdateStub.calledOnce).to.be.true;
-
-      // Check update arguments - matching your service's actual parameters
-      const updateArgs = profileUpdateStub.firstCall.args[0];
-      expect(updateArgs).to.deep.include({
-        personaName: "TestUser",
-        profileUrl: "http://example.com",
-        avatarFull: "http://example.com/avatar.jpg",
-        locCountryCode: "US",
-        timeCreated: 1620000000,
-      });
-
-      // Check where clause - note it uses steamid from the profile, not the function parameter
-      expect(profileUpdateStub.firstCall.args[1]).to.deep.equal({
-        where: { steamId },
-      });
-
-      // Verify result matches what we expect
-      expect(result).to.deep.equal(updatedProfileData);
+      expect(result).to.deep.equal(mockStoredProfile);
     });
 
-    it("should fetch and create a new profile if it does not exist", async () => {
-      const steamId = "123456789";
-      const mockProfileData = {
-        response: {
-          players: [
-            {
-              steamid: steamId,
-              personaname: "TestUser",
-              profileurl: "http://example.com",
-              avatarfull: "http://example.com/avatar.jpg",
-              loccountrycode: "US",
-              timecreated: 1620000000,
-            },
-          ],
+    it("should handle missing optional fields", async () => {
+      const mockProfileResponse = {
+        data: {
+          response: {
+            players: [
+              {
+                steamid: mockSteamId,
+                personaname: "MinimalUser",
+                profileurl: "https://steamcommunity.com/id/minimaluser/",
+                avatarfull: "https://avatars.steamstatic.com/minimal_full.jpg",
+                // loccountrycode and timecreated are missing
+              },
+            ],
+          },
         },
       };
 
-      const createdProfile = {
-        steamId,
-        personaName: "TestUser",
-        profileUrl: "http://example.com",
-        avatarFull: "http://example.com/avatar.jpg",
-        locCountryCode: "US",
-        timeCreated: 1620000000,
+      const mockStoredProfile = {
+        steamId: mockSteamId,
+        personaName: "MinimalUser",
+        profileUrl: "https://steamcommunity.com/id/minimaluser/",
+        avatarFull: "https://avatars.steamstatic.com/minimal_full.jpg",
+        locCountryCode: undefined,
+        timeCreated: undefined,
       };
 
-      // Setup stubs for the "create" case
-      axiosGetStub.resolves({ data: mockProfileData });
+      axiosGetStub.resolves(mockProfileResponse);
+      profileUpsertStub.resolves([mockStoredProfile, true]);
 
-      // First findOne returns null (no existing profile)
-      profileFindOneStub.onFirstCall().resolves(null);
-      // Second findOne after create returns the new profile
-      profileFindOneStub.onSecondCall().resolves(createdProfile);
+      const result = await service.updateProfile(mockSteamId);
 
-      // Create stub just needs to resolve (the value isn't used)
-      profileCreateStub.resolves({});
+      expect(
+        profileUpsertStub.calledWith({
+          steamId: mockSteamId,
+          personaName: "MinimalUser",
+          profileUrl: "https://steamcommunity.com/id/minimaluser/",
+          avatarFull: "https://avatars.steamstatic.com/minimal_full.jpg",
+          locCountryCode: undefined,
+          timeCreated: undefined,
+        })
+      ).to.be.true;
 
-      const result = await profileService.updateProfile(steamId);
-
-      // Verify axios.get was called with correct parameters
-      expect(axiosGetStub.calledOnce).to.be.true;
-
-      // Verify findOne was called twice (once before create, once after)
-      expect(profileFindOneStub.calledTwice).to.be.true;
-
-      // Verify create was called with correct parameters
-      expect(profileCreateStub.calledOnce).to.be.true;
-
-      // Check create arguments - matching your service's actual parameters
-      const createArgs = profileCreateStub.firstCall.args[0];
-      expect(createArgs).to.deep.equal({
-        steamId,
-        personaName: "TestUser",
-        profileUrl: "http://example.com",
-        avatarFull: "http://example.com/avatar.jpg",
-        locCountryCode: "US",
-        timeCreated: 1620000000,
-      });
-
-      // Verify result matches expected
-      expect(result).to.deep.equal(createdProfile);
+      expect(result).to.deep.equal(mockStoredProfile);
     });
 
-    it("should throw an error if the API call fails", async () => {
-      const steamId = "123456789";
-      axiosGetStub.rejects(new Error("API Error"));
+    it("should handle API errors and throw", async () => {
+      axiosGetStub.rejects(new Error("Steam API Error"));
 
       try {
-        await profileService.updateProfile(steamId);
-        // If we get here, the test should fail
-        expect.fail("Expected an error to be thrown");
+        await service.updateProfile(mockSteamId);
+        expect.fail("Should have thrown an error");
       } catch (error) {
-        expect((error as Error).message).to.equal("API Error");
+        expect(error).to.be.instanceOf(Error);
+        expect((error as Error).message).to.equal("Steam API Error");
       }
+    });
 
-      expect(axiosGetStub.calledOnce).to.be.true;
+    it("should handle database errors and throw", async () => {
+      const mockProfileResponse = {
+        data: {
+          response: {
+            players: [
+              {
+                steamid: mockSteamId,
+                personaname: "TestUser",
+                profileurl: "https://steamcommunity.com/id/testuser/",
+                avatarfull: "https://avatars.steamstatic.com/test_full.jpg",
+              },
+            ],
+          },
+        },
+      };
+
+      axiosGetStub.resolves(mockProfileResponse);
+      profileUpsertStub.rejects(new Error("Database Error"));
+
+      try {
+        await service.updateProfile(mockSteamId);
+        expect.fail("Should have thrown an error");
+      } catch (error) {
+        expect(error).to.be.instanceOf(Error);
+        expect((error as Error).message).to.equal("Database Error");
+      }
+    });
+
+    it("should handle empty response from Steam API", async () => {
+      const mockProfileResponse = {
+        data: {
+          response: {
+            players: [],
+          },
+        },
+      };
+
+      axiosGetStub.resolves(mockProfileResponse);
+
+      try {
+        await service.updateProfile(mockSteamId);
+        expect.fail("Should have thrown an error");
+      } catch (error) {
+        expect(error).to.be.instanceOf(TypeError);
+      }
+    });
+  });
+
+  describe("getProfiles", () => {
+    const mockSteamId = "76561198000000000";
+
+    it("should retrieve profiles from database", async () => {
+      const mockProfiles = [
+        {
+          steamId: mockSteamId,
+          personaName: "TestUser",
+          profileUrl: "https://steamcommunity.com/id/testuser/",
+          avatarFull: "https://avatars.steamstatic.com/test_full.jpg",
+          locCountryCode: "US",
+          timeCreated: 1234567890,
+        },
+      ];
+
+      profileFindAllStub.resolves(mockProfiles);
+
+      const result = await service.getProfiles(mockSteamId);
+
+      expect(profileFindAllStub.calledOnce).to.be.true;
+      expect(profileFindAllStub.calledWith({ where: { steamId: mockSteamId } }))
+        .to.be.true;
+      expect(result).to.deep.equal(mockProfiles);
+    });
+
+    it("should return empty array when no profiles found", async () => {
+      profileFindAllStub.resolves([]);
+
+      const result = await service.getProfiles(mockSteamId);
+
+      expect(result).to.deep.equal([]);
+    });
+
+    it("should handle database errors and throw", async () => {
+      profileFindAllStub.rejects(new Error("Database Error"));
+
+      try {
+        await service.getProfiles(mockSteamId);
+        expect.fail("Should have thrown an error");
+      } catch (error) {
+        expect(error).to.be.instanceOf(Error);
+        expect((error as Error).message).to.equal("Database Error");
+      }
     });
   });
 });

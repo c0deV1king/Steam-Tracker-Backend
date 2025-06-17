@@ -48,6 +48,7 @@
     "@types/sinon": "^17.0.4",
     "@types/validator": "^13.12.2",
     "chai": "^5.2.0",
+    "esmock": "^2.7.0",
     "mocha": "^11.1.0",
     "typescript": "^5.7.3"
   }
